@@ -21,36 +21,36 @@ namespace Rivet
 
             void init()
             {
-                IdentifiedFinalState electrons(FinalState(-2.4,2.4,10*GeV));
+                IdentifiedFinalState electrons(FinalState(-4,4,10*GeV));
                 electrons.acceptId(PID::ELECTRON);
                 electrons.acceptId(PID::POSITRON);
                 addProjection(electrons,"EFS");
 
-                IdentifiedFinalState muons(FinalState(-2.4,2.4,10*GeV));
+                IdentifiedFinalState muons(FinalState(-4,4,10*GeV));
                 muons.acceptId(PID::MUON);
                 muons.acceptId(PID::ANTIMUON);
                 addProjection(muons,"MUFS");
 
-                ChargedLeptons lfs(FinalState(-2.4,2.4,10*GeV));
+                ChargedLeptons lfs(FinalState(-4,4,10*GeV));
                 addProjection(lfs,"LFS");
 
-                ChargedFinalState cfs(FinalState(-2.4,2.4,0*GeV));
+                ChargedFinalState cfs(FinalState(-4,4,0*GeV));
                 addProjection(cfs,"CFS");
 
                 addProjection(HeavyHadrons(Cuts::abseta <5 && Cuts::pT >5*GeV),"BCHadrons");
 
                 //FinalState to reconstruct jets
-                VetoedFinalState fs (FinalState(-2.4,2.4,0*GeV));
+                VetoedFinalState fs (FinalState(-4,4,0*GeV));
                 fs.addVetoOnThisFinalState(lfs);
                 addProjection(FastJets(fs, FastJets::ANTIKT,0.4),"Jets");
                 addProjection(MissingMomentum(fs),"MissingET");
 
-                IdentifiedFinalState nu_id(FinalState(-2.4,2.4,0*GeV));
+                IdentifiedFinalState nu_id(FinalState(-4,4,0*GeV));
                 nu_id.acceptNeutrinos();
                 PromptFinalState neutrinos(nu_id);
                 addProjection(neutrinos,"Neutrinos");
 
-                VetoedFinalState vfs(FinalState(-2.4,2.4,0*GeV));
+                VetoedFinalState vfs(FinalState(-4,4,0*GeV));
                 vfs.addVetoOnThisFinalState(lfs);
                 addProjection(vfs,"VFS");
 
@@ -107,7 +107,7 @@ namespace Rivet
 
                 _h_event_MET->fill(_MET/GeV,weight);
 
-                if(met.vectorEt().mod()<30*GeV)
+                if(met.vectorEt().mod()<10*GeV)
                 {
                     vetoEvent;
                 }
@@ -118,12 +118,6 @@ namespace Rivet
 
                 const FastJets & jetpro = applyProjection<FastJets>(event, "Jets");
                 const Jets alljets      = jetpro.jetsByPt(20*GeV);
-
-                if(alljets.size()<4)
-                {
-                    MSG_INFO("Event failed jet multiplicity cut");
-                    vetoEvent;
-                }
 
                Particles cand_e;
                 //Discard two electrons within R=0.1
@@ -405,41 +399,41 @@ namespace Rivet
             void finalize()
             {
                 float norm = crossSection()/sumOfWeights();
-                scale(_h_event_MET,norm);
-                scale(_h_event_nJets,norm);
-                scale(_h_event_HT,norm);
-                scale(_h_event_nEl,norm);
-                scale(_h_event_nMu,norm);
+                normalize(_h_event_MET,norm);
+                normalize(_h_event_nJets,norm);
+                normalize(_h_event_HT,norm);
+                normalize(_h_event_nEl,norm);
+                normalize(_h_event_nMu,norm);
             
-                scale(_h_diEl_mass,norm);
-                scale(_h_diEl_pt,norm);
-                scale(_h_diEl_eta,norm);
-                scale(_h_diEl_phi,norm);
+                normalize(_h_diEl_mass,norm);
+                normalize(_h_diEl_pt,norm);
+                normalize(_h_diEl_eta,norm);
+                normalize(_h_diEl_phi,norm);
 
-                scale(_h_diMu_mass,norm);
-                scale(_h_diMu_pt,norm);
-                scale(_h_diMu_eta,norm);
-                scale(_h_diMu_phi,norm);
+                normalize(_h_diMu_mass,norm);
+                normalize(_h_diMu_pt,norm);
+                normalize(_h_diMu_eta,norm);
+                normalize(_h_diMu_phi,norm);
 
-                scale(_h_WLep_mass,norm);
-                scale(_h_WLep_pt,norm);
-                scale(_h_WLep_eta,norm);
-                scale(_h_WLep_phi,norm);
+                normalize(_h_WLep_mass,norm);
+                normalize(_h_WLep_pt,norm);
+                normalize(_h_WLep_eta,norm);
+                normalize(_h_WLep_phi,norm);
 
-                scale(_h_WHad_mass,norm);
-                scale(_h_WHad_pt,norm);
-                scale(_h_WHad_eta,norm);
-                scale(_h_WHad_phi,norm);
+                normalize(_h_WHad_mass,norm);
+                normalize(_h_WHad_pt,norm);
+                normalize(_h_WHad_eta,norm);
+                normalize(_h_WHad_phi,norm);
 
-                scale(_h_top_mass,norm);
-                scale(_h_top_pt,norm);
-                scale(_h_top_eta,norm);
-                scale(_h_top_phi,norm);
+                normalize(_h_top_mass,norm);
+                normalize(_h_top_pt,norm);
+                normalize(_h_top_eta,norm);
+                normalize(_h_top_phi,norm);
 
 
-                scale(_h_top_dR,norm);
-                scale(_h_top_dEta,norm);
-                scale(_h_top_dPhi,norm);
+                normalize(_h_top_dR,norm);
+                normalize(_h_top_dEta,norm);
+                normalize(_h_top_dPhi,norm);
                 
             }
 
