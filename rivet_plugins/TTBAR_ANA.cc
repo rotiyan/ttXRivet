@@ -90,7 +90,6 @@ namespace Rivet {
       _h_jet_2_pT = bookHisto1D("jet_2_pT", logspace(50, 20.0, 400.0));
       _h_jet_3_pT = bookHisto1D("jet_3_pT", logspace(50, 20.0, 300.0));
       _h_jet_4_pT = bookHisto1D("jet_4_pT", logspace(50, 20.0, 200.0));
-      _h_jet_HT   = bookHisto1D("jet_HT", logspace(50, 100.0, 2000.0));
       //
       _h_bjet_1_pT = bookHisto1D("jetb_1_pT", logspace(50, 20.0, 400.0));
       _h_bjet_2_pT = bookHisto1D("jetb_2_pT", logspace(50, 20.0, 300.0));
@@ -121,6 +120,7 @@ namespace Rivet {
       //
       _h_wenu_mass  = bookHisto1D("W_enu_mass",120,5,115);
       _h_wenu_pt    = bookHisto1D("W_enu_pt",200,0,200);
+      _h_wenu_mt    = bookHisto1D("W_enu_mt",200,0,200);
       _h_wenu_eta   = bookHisto1D("W_enu_eta",100,-5,5);
       _h_wenu_phi   = bookHisto1D("W_enu_phi",100,0,6);
       _h_wel_pt     = bookHisto1D("W_el_pt",200,0,200);
@@ -129,14 +129,25 @@ namespace Rivet {
       //
       _h_wmunu_mass = bookHisto1D("W_munu_mass",120,5,115);
       _h_wmunu_pt   = bookHisto1D("W_munu_pt",200,0,200);
+      _h_wmunu_mt   = bookHisto1D("W_munu_mt",200,0,200);
       _h_wmunu_eta  = bookHisto1D("W_munu_eta",100,-5,5);
       _h_wmunu_phi  = bookHisto1D("W_munu_phi",100,0,6);
       _h_wmu_pt     = bookHisto1D("W_mu_pt",200,0,200);
       _h_wmu_eta    = bookHisto1D("W_mu_eta",100,-5,5);
       _h_wmu_phi    = bookHisto1D("W_mu_phi",100,0,6);
       //
-      _h_t_mass = bookHisto1D("t_mass", 150, 130, 430);
+      _h_t_mass     = bookHisto1D("t_mass", 150, 130, 430);
       _h_t_mass_W_cut = bookHisto1D("t_mass_W_cut", 150, 130, 430);
+      _h_t_pt       = bookHisto1D("t_pt",100,0,200);
+      _h_t_pt_W_cut = bookHisto1D("t_pt_W_cut",100,0,200);
+      _h_t_lep_mass = bookHisto1D("t_lep_mass",150,130,430);
+      _h_t_lep_mass_W_cut = bookHisto1D("t_lep_mass_W_cut",150,130,430);
+      _h_t_lep_pt   = bookHisto1D("t_lep_pt",100,0,200);
+      _h_t_lep_pt_W_cut= bookHisto1D("t_lep_pt_W_cut",100,0,200);
+      //
+      _h_top_dR     = bookHisto1D("top_dR",20,0.0,7.0);
+      _h_top_dEta   = bookHisto1D("top_dEta",20,0.0,7.0);
+      _h_top_dPhi   = bookHisto1D("top_dPhi",20,0.0,7.0);
       //
       _h_jetb_1_jetb_2_dR   = bookHisto1D("jetb_1_jetb_2_dR", 20, 0.0, 7.0);
       _h_jetb_1_jetb_2_deta = bookHisto1D("jetb_1_jetb_2_deta", 20, 0.0, 7.0);
@@ -223,16 +234,13 @@ namespace Rivet {
       // hardest, and so on. We apply no pT cut here only because we want to
       // plot all jet pTs to help optimise our jet pT cut.
       const FastJets& jetpro = applyProjection<FastJets>(event, "Jets");
-      const Jets alljets = jetpro.jetsByPt();
-      if (alljets.size() < 4) {
-        MSG_INFO("Event failed jet multiplicity cut");
-        vetoEvent;
-      }
-
       const Jets jets = jetpro.jetsByPt(20*GeV);
-      double ht = 0.0;
-      foreach (const Jet& j, jets) { ht += j.pT(); }
-
+      if(jets.size()<4)
+      {
+          MSG_INFO("Event failed jet multiplicity cut");
+          vetoEvent;
+      }
+      
       Jets bjets, ljets;
       foreach (const Jet& jet, jets) {
         // // Don't count jets that overlap with the hard leptons
@@ -302,11 +310,15 @@ namespace Rivet {
           }
       }
 
+      FourMomentum W_lep(10.*sqrtS(),0,0,0);
       if(welFinder.bosons().size()>0)
       {
           FourMomentum wenuMom = welFinder.bosons()[0].momentum();
+          W_lep = wenuMom;
+
           _h_wenu_mass->fill(wenuMom.mass()/GeV,weight);
           _h_wenu_pt->fill(wenuMom.pT()/GeV,weight);
+          _h_wenu_mt->fill(welFinder.mT()/GeV,weight);
           _h_wenu_eta->fill(wenuMom.eta(),weight);
           _h_wenu_phi->fill(wenuMom.phi(),weight);
           foreach(const Particle& p, welFinder.constituentLeptons())
@@ -320,8 +332,11 @@ namespace Rivet {
       if(wmuFinder.bosons().size()>0)
       {
           FourMomentum wmunuMom = wmuFinder.bosons()[0].momentum();
+          W_lep = wmunuMom;
+
           _h_wmunu_mass->fill(wmunuMom.mass()/GeV,weight);
           _h_wmunu_pt->fill(wmunuMom.pT()/GeV,weight);
+          _h_wmunu_mt->fill(wmuFinder.mT()/GeV,weight);
           _h_wmunu_eta->fill(wmunuMom.eta(),weight);
           _h_wmunu_phi->fill(wmunuMom.phi(),weight);
           foreach(const Particle &p, wmuFinder.constituentLeptons())
@@ -334,13 +349,16 @@ namespace Rivet {
 
  
       // Update passed-cuts counter and fill all-jets histograms
-      _h_jet_1_pT->fill(alljets[0].pT()/GeV, weight);
-      _h_jet_2_pT->fill(alljets[1].pT()/GeV, weight);
-      _h_jet_3_pT->fill(alljets[2].pT()/GeV, weight);
-      _h_jet_4_pT->fill(alljets[3].pT()/GeV, weight);
+      _h_jet_1_pT->fill(jets[0].pT()/GeV, weight);
+      _h_jet_2_pT->fill(jets[1].pT()/GeV, weight);
+      _h_jet_3_pT->fill(jets[2].pT()/GeV, weight);
+      _h_jet_4_pT->fill(jets[3].pT()/GeV, weight);
+
+      double ht = 0.0;
+      foreach (const Jet& j, jets) { ht += j.pT(); }
 
       _h_njets->fill(jets.size(), weight);
-      _h_jet_HT->fill(ht/GeV, weight);
+      _h_evnt_HT->fill(ht/GeV, weight);
       _h_nBjets->fill(bjets.size(),weight);
 
 
@@ -373,18 +391,70 @@ namespace Rivet {
       // both possible top momenta and fill the histograms with both.
       const FourMomentum t1 = W + bjets[0].momentum();
       const FourMomentum t2 = W + bjets[1].momentum();
+
+      const float target_topMass = 173.21*GeV;
+
       _h_W_had_mass->fill(W.mass()/GeV, weight);
       _h_W_had_pt->fill(W.pt()/GeV,weight);
       _h_W_had_eta->fill(W.eta(),weight);
       _h_W_had_phi->fill(W.phi(),weight);
-      _h_t_mass->fill(t1.mass(), weight);
-      _h_t_mass->fill(t2.mass(), weight);
+
+      FourMomentum t_had(10*sqrtS(),0.0,0.0,0.0);
+      FourMomentum t_lep(10*sqrtS(),0.0,0.0,0.0);
+      if(fabs(target_topMass - t1.mass()) < fabs(target_topMass - t2.mass()))
+      {
+          _h_t_mass->fill(t1.mass()/GeV, weight);
+          _h_t_pt->fill(t1.pT()/GeV,weight);
+          t_had = t1;
+      }
+      else
+      {
+        _h_t_mass->fill(t2.mass()/GeV, weight);
+        _h_t_pt->fill(t2.pT()/GeV,weight);
+        t_had = t2;
+      }
+
+      //Find the leptonic top
+
+      const FourMomentum t1_lep = W_lep + bjets[0].momentum();
+      const FourMomentum t2_lep = W_lep + bjets[1].momentum();
+      
+      if(fabs(target_topMass - t1_lep.mass()) < fabs(target_topMass - t2_lep.mass()))
+      {
+          _h_t_lep_mass->fill(t1_lep.mass()/GeV,weight);
+          _h_t_lep_pt->fill(t1_lep.pT()/GeV,weight);
+          t_lep = t1_lep;
+      }
+      else
+      {
+          _h_t_lep_mass->fill(t2_lep.mass()/GeV,weight);
+          _h_t_lep_pt->fill(t2_lep.pT()/GeV,weight);
+          t_lep = t2_lep;
+      }
+
+      //Around a 10 GeV top mass window fill the delta distributions
+      if(fabs(target_topMass -t_had.mass()) <10 && fabs(target_topMass - t_lep.mass()) <10)
+      {
+          _h_top_dR->fill(deltaR(t_had,t_lep),weight);
+          _h_top_dEta->fill(deltaEta(t_had,t_lep),weight);
+          _h_top_dPhi->fill(deltaPhi(t_had,t_lep),weight);
+      }
+
 
       // Placing a cut on the well-known W mass helps to reduce backgrounds
-      if (inRange(W.mass()/GeV, 75.0, 85.0)) {
+      if (inRange(W.mass()/GeV, 75.0, 85.0)) 
+      {
         MSG_INFO("W found with mass " << W.mass()/GeV << " GeV");
-        _h_t_mass_W_cut->fill(t1.mass(), weight);
-        _h_t_mass_W_cut->fill(t2.mass(), weight);
+        if(fabs(target_topMass - t1.mass()) < fabs(target_topMass - t2.mass()))
+        {
+            _h_t_mass_W_cut->fill(t1.mass()/GeV, weight);
+            _h_t_pt_W_cut->fill(t1.pT()/GeV,weight);
+        }
+        else
+        {
+            _h_t_mass_W_cut->fill(t2.mass(), weight);
+            _h_t_pt_W_cut->fill(t2.pT()/GeV,weight);
+        }
 
         _h_jetb_1_jetb_2_dR->fill(deltaR(bjets[0].momentum(), bjets[1].momentum()),weight);
         _h_jetb_1_jetb_2_deta->fill(fabs(bjets[0].eta()-bjets[1].eta()),weight);
@@ -408,7 +478,6 @@ namespace Rivet {
         _h_jetb_1_l_dphi->fill(deltaPhi(bjets[0].momentum(),l),weight);
         _h_jetb_1_l_mass->fill(FourMomentum(bjets[0].momentum()+l).mass(), weight);
       }
-
     }
 
 
@@ -428,7 +497,6 @@ namespace Rivet {
       scale(_h_jet_2_pT,norm);
       scale(_h_jet_3_pT,norm);
       scale(_h_jet_4_pT,norm);
-      scale(_h_jet_HT,norm);
       scale(_h_bjet_1_pT,norm);
       scale(_h_bjet_2_pT,norm);
       scale(_h_ljet_1_pT,norm);
@@ -466,7 +534,16 @@ namespace Rivet {
       scale(_h_wmu_eta,norm);
       scale(_h_wmu_phi,norm);
       scale(_h_t_mass,norm);
+      scale(_h_t_pt,norm);
       scale(_h_t_mass_W_cut,norm);
+      scale(_h_t_pt_W_cut,norm);
+      scale(_h_t_lep_mass,norm);
+      scale(_h_t_lep_mass_W_cut,norm);
+      scale(_h_t_lep_pt,norm);
+      scale(_h_t_lep_pt_W_cut,norm);
+      scale(_h_top_dR,norm);
+      scale(_h_top_dEta,norm);
+      scale(_h_top_dPhi,norm);
       scale(_h_jetb_1_jetb_2_dR,norm);
       scale(_h_jetb_1_jetb_2_deta,norm);
       scale(_h_jetb_1_jetb_2_dphi,norm);
@@ -504,21 +581,23 @@ namespace Rivet {
     Histo1DPtr _h_njets;
     Histo1DPtr _h_nBjets;
     Histo1DPtr _h_jet_1_pT, _h_jet_2_pT, _h_jet_3_pT, _h_jet_4_pT;
-    Histo1DPtr _h_jet_HT;
     Histo1DPtr _h_bjet_1_pT, _h_bjet_2_pT;
     Histo1DPtr _h_ljet_1_pT, _h_ljet_2_pT;
     Histo1DPtr _h_zee_mass,_h_zee_pt,_h_zee_eta,_h_zee_phi;
     Histo1DPtr _h_zel_pt,_h_zel_eta,_h_zel_phi;
     Histo1DPtr _h_zmumu_mass,_h_zmumu_pt,_h_zmumu_eta,_h_zmumu_phi;
     Histo1DPtr _h_zmu_pt,_h_zmu_eta,_h_zmu_phi;
-    Histo1DPtr _h_wenu_mass,_h_wenu_pt,_h_wenu_eta,_h_wenu_phi;
+    Histo1DPtr _h_wenu_mass,_h_wenu_pt,_h_wenu_mt,_h_wenu_eta,_h_wenu_phi;
     Histo1DPtr _h_wel_pt,_h_wel_eta,_h_wel_phi;
-    Histo1DPtr _h_wmunu_mass,_h_wmunu_pt,_h_wmunu_eta,_h_wmunu_phi;
+    Histo1DPtr _h_wmunu_mass,_h_wmunu_pt,_h_wmunu_mt,_h_wmunu_eta,_h_wmunu_phi;
     Histo1DPtr _h_wmu_pt,_h_wmu_eta,_h_wmu_phi;
     Histo1DPtr _h_W_had_mass,_h_W_had_pt,_h_W_had_eta,_h_W_had_phi;
     Histo1DPtr _h_t_mass, _h_t_mass_W_cut;
     Histo1DPtr _h_t_pt, _h_t_pt_W_cut;
     Histo1DPtr _h_t_eta,_h_t_eta_W_cut;
+    Histo1DPtr _h_t_lep_mass, _h_t_lep_mass_W_cut;
+    Histo1DPtr _h_t_lep_pt, _h_t_lep_pt_W_cut;
+    Histo1DPtr _h_top_dR,_h_top_dEta,_h_top_dPhi;
     Histo1DPtr _h_jetb_1_jetb_2_dR, _h_jetb_1_jetb_2_deta, _h_jetb_1_jetb_2_dphi;
     Histo1DPtr _h_jetb_1_jetl_1_dR, _h_jetb_1_jetl_1_deta, _h_jetb_1_jetl_1_dphi;
     Histo1DPtr _h_jetl_1_jetl_2_dR, _h_jetl_1_jetl_2_deta, _h_jetl_1_jetl_2_dphi;
