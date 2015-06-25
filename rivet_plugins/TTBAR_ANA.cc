@@ -6,6 +6,8 @@
 #include "Rivet/Projections/MissingMomentum.hh"
 #include "Rivet/Projections/IdentifiedFinalState.hh"
 #include "Rivet/Projections/FastJets.hh"
+#include "Rivet/Projections/ZFinder.hh"
+#include "Rivet/Projections/WFinder.hh"
 #include "Rivet/AnalysisLoader.hh"
 
 namespace Rivet {
@@ -37,6 +39,20 @@ namespace Rivet {
       
       ChargedLeptons lfs(FinalState(-4.2,4.2,10*GeV));
       addProjection(lfs,"LFS");
+
+      FinalState zfs;
+      Cut zeefscut = (Cuts::abseta <4.2) && (Cuts::pT>10*GeV);
+      ZFinder zeeFinder(zfs,zeefscut,PID::ELECTRON,5.0*GeV,115.0*GeV,0.2,ZFinder::CLUSTERNODECAY,ZFinder::NOTRACK);
+      addProjection(zeeFinder,"zeeFinder");
+
+      ZFinder zmumuFinder(zfs,zeefscut,PID::MUON,5.0*GeV,115.0*GeV,0.2,ZFinder::NOCLUSTER,ZFinder::NOTRACK);
+      addProjection(zmumuFinder,"zmumuFinder");
+
+      WFinder welFinder(zfs,zeefscut,PID::ELECTRON,5.0*GeV,115.0*GeV,25.0*GeV,0.1);//WFinder::CLUSTERNODECAY,WFinder::NOTRACK,WFinder::TRANSMASS);
+      addProjection(welFinder,"welFinder");
+
+      WFinder wmuFinder(zfs,zeefscut,PID::MUON,5.0*GeV,115.0*GeV,25.0*GeV,0.1);//,WFinder::CLUSTERNODECAY,WFinder::NOTRACK,WFinder::TRANSMASS);
+      addProjection(wmuFinder,"wmuFinder");
 
 
       addProjection(HeavyHadrons(Cuts::abseta < 5 && Cuts::pT > 5*GeV), "BCHadrons");
@@ -82,9 +98,43 @@ namespace Rivet {
       _h_ljet_1_pT = bookHisto1D("jetl_1_pT", logspace(50, 20.0, 400.0));
       _h_ljet_2_pT = bookHisto1D("jetl_2_pT", logspace(50, 20.0, 300.0));
       //
-      _h_W_had_mass = bookHisto1D("W_had_mass", 75, 30, 180);
+      _h_W_had_mass = bookHisto1D("W_had_mass", 120, 5, 115);
       _h_W_had_pt   = bookHisto1D("W_had_pt",100,20.0,100);
       _h_W_had_eta  = bookHisto1D("W_had_eta",100,-4,4);
+      _h_W_had_phi  = bookHisto1D("W_hadd_phi",100,0,6);
+      //
+      _h_zee_mass   = bookHisto1D("Z_ee_mass",120,5,115);
+      _h_zee_pt     = bookHisto1D("Z_ee_pt",200,0,200);
+      _h_zee_eta    = bookHisto1D("Z_ee_eta",100,-5,5);
+      _h_zee_phi    = bookHisto1D("Z_ee_phi",100,0,6);
+      _h_zel_pt     = bookHisto1D("Zel_pt",150,0,150);
+      _h_zel_eta    = bookHisto1D("Zel_eta",100,-5,5);
+      _h_zel_phi    = bookHisto1D("Zel_phi",100,0,6);
+      //
+      _h_zmumu_mass = bookHisto1D("Z_mumu_mass",120,5,115);
+      _h_zmumu_pt   = bookHisto1D("Z_mumu_pt",200,0,200);
+      _h_zmumu_eta  = bookHisto1D("Z_mumu_eta",100,-5,5);
+      _h_zmumu_phi  = bookHisto1D("Z_mumu_phi",100,0,6);
+      _h_zmu_pt     = bookHisto1D("Zmu_pt",150,0,150);
+      _h_zmu_eta    = bookHisto1D("Zmu_eta",100,-5,5);
+      _h_zmu_phi    = bookHisto1D("Zmu_phi",100,0,6);
+      //
+      _h_wenu_mass  = bookHisto1D("W_enu_mass",120,5,115);
+      _h_wenu_pt    = bookHisto1D("W_enu_pt",200,0,200);
+      _h_wenu_eta   = bookHisto1D("W_enu_eta",100,-5,5);
+      _h_wenu_phi   = bookHisto1D("W_enu_phi",100,0,6);
+      _h_wel_pt     = bookHisto1D("W_el_pt",200,0,200);
+      _h_wel_eta    = bookHisto1D("W_el_eta",100,-5,5);
+      _h_wel_phi    = bookHisto1D("W_el_phi",100,0,6);
+      //
+      _h_wmunu_mass = bookHisto1D("W_munu_mass",120,5,115);
+      _h_wmunu_pt   = bookHisto1D("W_munu_pt",200,0,200);
+      _h_wmunu_eta  = bookHisto1D("W_munu_eta",100,-5,5);
+      _h_wmunu_phi  = bookHisto1D("W_munu_phi",100,0,6);
+      _h_wmu_pt     = bookHisto1D("W_mu_pt",200,0,200);
+      _h_wmu_eta    = bookHisto1D("W_mu_eta",100,-5,5);
+      _h_wmu_phi    = bookHisto1D("W_mu_phi",100,0,6);
+      //
       _h_t_mass = bookHisto1D("t_mass", 150, 130, 430);
       _h_t_mass_W_cut = bookHisto1D("t_mass_W_cut", 150, 130, 430);
       //
@@ -116,14 +166,19 @@ namespace Rivet {
       
       const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
       const IdentifiedFinalState & electrons = applyProjection<IdentifiedFinalState>(event, "EFS");
-      MSG_INFO("Electron multiplicity = " << electrons.size());
       _h_evnt_nEl->fill(electrons.size(),weight);
-      foreach (const Particle& el , electrons.particles()) {
-        MSG_INFO("Electron pT = " << el.pT());
-      }
-      if (electrons.size()<3) {
-        MSG_INFO("Event failed lepton multiplicity cut");
-        vetoEvent;
+
+      const ZFinder & zeeFinder     = applyProjection<ZFinder>(event,"zeeFinder");
+      const ZFinder & zmumuFinder   = applyProjection<ZFinder>(event,"zmumuFinder");
+      const WFinder & welFinder     = applyProjection<WFinder>(event,"welFinder");
+      const WFinder & wmuFinder     = applyProjection<WFinder>(event,"wmuFinder");
+
+      if(zeeFinder.bosons().size()==0 && zmumuFinder.bosons().size()==0)
+      {
+          MSG_INFO("ZeeFinder size: "<<zeeFinder.size());
+          MSG_INFO("ZmumuFinder size: "<<zmumuFinder.size());
+          MSG_INFO("Veto Event");
+          vetoEvent;
       }
       
       // Get all charged particles
@@ -156,8 +211,8 @@ namespace Rivet {
       const MissingMomentum& met = applyProjection<MissingMomentum>(event, "MissingET");
       _h_evnt_MET->fill(met.vectorEt().mod(),weight);
       MSG_INFO("Vector ET = " << met.vectorEt().mod() << " GeV");
-      if (met.vectorEt().mod() < 30*GeV) {
-        MSG_INFO("Event failed missing ET cut");
+      if (met.vectorEt().mod() < 30*GeV && (welFinder.bosons().size()<1 || wmuFinder.bosons().size()<1)) {
+        MSG_INFO("Event failed missing ET cut, or couldn't find leptonically decaying W candidate");
         vetoEvent;
       }
       const Particles bhadrons = sortByPt(applyProjection<HeavyHadrons>(event, "BCHadrons").bHadrons());
@@ -202,7 +257,7 @@ namespace Rivet {
        }
       MSG_INFO("Number of b-jets = " << bjets.size());
       MSG_INFO("Number of l-jets = " << ljets.size());
-      if (bjets.size() != 2) {
+      if (bjets.size() < 2) {
         MSG_INFO("Event failed post-lepton-isolation b-tagging cut");
         vetoEvent;
       }
@@ -212,8 +267,71 @@ namespace Rivet {
       }
       _sumofweight += event.weight();
 
+
       //Make all the plots from here
       //
+      MSG_INFO("Event passed all cuts: Filling histograms");
+      if(zeeFinder.bosons().size()>0)
+      {
+          FourMomentum zeeMom = zeeFinder.bosons()[0].momentum();
+          _h_zee_mass->fill(zeeMom.mass()/GeV,weight);
+          _h_zee_pt->fill(zeeMom.pT()/GeV,weight);
+          _h_zee_eta->fill(zeeMom.eta(),weight);
+          _h_zee_phi->fill(zeeMom.phi(),weight);
+          foreach(const Particle& p, zeeFinder.constituents())
+          {
+              _h_zel_pt->fill(p.momentum().pT()/GeV,weight);
+              _h_zel_eta->fill(p.momentum().eta(),weight);
+              _h_zel_phi->fill(p.momentum().phi(),weight);
+          }
+
+      }
+
+      if(zmumuFinder.bosons().size()>0)
+      {
+          FourMomentum zmumuMom = zmumuFinder.bosons()[0].momentum();
+          _h_zmumu_mass->fill(zmumuMom.mass()/GeV,weight);
+          _h_zmumu_pt->fill(zmumuMom.pT()/GeV,weight);
+          _h_zmumu_eta->fill(zmumuMom.eta(),weight);
+          _h_zmumu_phi->fill(zmumuMom.phi(),weight);
+          foreach(const Particle &p, zmumuFinder.constituents())
+          {
+              _h_zmu_pt->fill(p.momentum().pT()/GeV,weight);
+              _h_zmu_eta->fill(p.momentum().eta(),weight);
+              _h_zmu_phi->fill(p.momentum().phi(),weight);
+          }
+      }
+
+      if(welFinder.bosons().size()>0)
+      {
+          FourMomentum wenuMom = welFinder.bosons()[0].momentum();
+          _h_wenu_mass->fill(wenuMom.mass()/GeV,weight);
+          _h_wenu_pt->fill(wenuMom.pT()/GeV,weight);
+          _h_wenu_eta->fill(wenuMom.eta(),weight);
+          _h_wenu_phi->fill(wenuMom.phi(),weight);
+          foreach(const Particle& p, welFinder.constituentLeptons())
+          {
+              _h_wel_pt->fill(p.momentum().pT()/GeV,weight);
+              _h_wel_eta->fill(p.momentum().eta(),weight);
+              _h_wel_phi->fill(p.momentum().phi(),weight);
+          }
+      }
+
+      if(wmuFinder.bosons().size()>0)
+      {
+          FourMomentum wmunuMom = wmuFinder.bosons()[0].momentum();
+          _h_wmunu_mass->fill(wmunuMom.mass()/GeV,weight);
+          _h_wmunu_pt->fill(wmunuMom.pT()/GeV,weight);
+          _h_wmunu_eta->fill(wmunuMom.eta(),weight);
+          _h_wmunu_phi->fill(wmunuMom.phi(),weight);
+          foreach(const Particle &p, wmuFinder.constituentLeptons())
+          {
+              _h_wmu_pt->fill(p.momentum().pT()/GeV,weight);
+              _h_wmu_eta->fill(p.momentum().eta(),weight);
+              _h_wmu_phi->fill(p.momentum().phi(),weight);
+          }
+      }
+
  
       // Update passed-cuts counter and fill all-jets histograms
       _h_jet_1_pT->fill(alljets[0].pT()/GeV, weight);
@@ -255,9 +373,10 @@ namespace Rivet {
       // both possible top momenta and fill the histograms with both.
       const FourMomentum t1 = W + bjets[0].momentum();
       const FourMomentum t2 = W + bjets[1].momentum();
-      _h_W_had_mass->fill(W.mass(), weight);
-      _h_W_had_pt->fill(W.mass(),weight);
+      _h_W_had_mass->fill(W.mass()/GeV, weight);
+      _h_W_had_pt->fill(W.pt()/GeV,weight);
       _h_W_had_eta->fill(W.eta(),weight);
+      _h_W_had_phi->fill(W.phi(),weight);
       _h_t_mass->fill(t1.mass(), weight);
       _h_t_mass->fill(t2.mass(), weight);
 
@@ -317,10 +436,35 @@ namespace Rivet {
       scale(_h_W_had_mass,norm);
       scale(_h_W_had_pt,norm);
       scale(_h_W_had_eta,norm);
-      scale(_h_W_lep_mass,norm);
-      scale(_h_W_lep_pt,norm);
-      scale(_h_W_lep_mt,norm);
-      scale(_h_W_lep_eta,norm);
+      scale(_h_W_had_phi,norm);
+      scale(_h_zee_mass,norm);
+      scale(_h_zee_pt,norm);
+      scale(_h_zee_eta,norm);
+      scale(_h_zee_phi,norm);
+      scale(_h_zel_pt,norm);
+      scale(_h_zel_eta,norm);
+      scale(_h_zel_phi,norm);
+      scale(_h_zmumu_mass,norm);
+      scale(_h_zmumu_pt,norm);
+      scale(_h_zmumu_eta,norm);
+      scale(_h_zmumu_phi,norm);
+      scale(_h_zmu_pt,norm);
+      scale(_h_zmu_eta,norm);
+      scale(_h_zmu_phi,norm);
+      scale(_h_wenu_mass,norm);
+      scale(_h_wenu_pt,norm);
+      scale(_h_wenu_eta,norm);
+      scale(_h_wenu_phi,norm);
+      scale(_h_wel_pt,norm);
+      scale(_h_wel_eta,norm);
+      scale(_h_wel_phi,norm);
+      scale(_h_wmunu_mass,norm);
+      scale(_h_wmunu_pt,norm);
+      scale(_h_wmunu_eta,norm);
+      scale(_h_wmunu_phi,norm);
+      scale(_h_wmu_pt,norm);
+      scale(_h_wmu_eta,norm);
+      scale(_h_wmu_phi,norm);
       scale(_h_t_mass,norm);
       scale(_h_t_mass_W_cut,norm);
       scale(_h_jetb_1_jetb_2_dR,norm);
@@ -363,13 +507,15 @@ namespace Rivet {
     Histo1DPtr _h_jet_HT;
     Histo1DPtr _h_bjet_1_pT, _h_bjet_2_pT;
     Histo1DPtr _h_ljet_1_pT, _h_ljet_2_pT;
-    Histo1DPtr _h_W_had_mass;
-    Histo1DPtr _h_W_had_pt;
-    Histo1DPtr _h_W_had_eta;
-    Histo1DPtr _h_W_lep_mass;
-    Histo1DPtr _h_W_lep_mt;
-    Histo1DPtr _h_W_lep_pt;
-    Histo1DPtr _h_W_lep_eta;
+    Histo1DPtr _h_zee_mass,_h_zee_pt,_h_zee_eta,_h_zee_phi;
+    Histo1DPtr _h_zel_pt,_h_zel_eta,_h_zel_phi;
+    Histo1DPtr _h_zmumu_mass,_h_zmumu_pt,_h_zmumu_eta,_h_zmumu_phi;
+    Histo1DPtr _h_zmu_pt,_h_zmu_eta,_h_zmu_phi;
+    Histo1DPtr _h_wenu_mass,_h_wenu_pt,_h_wenu_eta,_h_wenu_phi;
+    Histo1DPtr _h_wel_pt,_h_wel_eta,_h_wel_phi;
+    Histo1DPtr _h_wmunu_mass,_h_wmunu_pt,_h_wmunu_eta,_h_wmunu_phi;
+    Histo1DPtr _h_wmu_pt,_h_wmu_eta,_h_wmu_phi;
+    Histo1DPtr _h_W_had_mass,_h_W_had_pt,_h_W_had_eta,_h_W_had_phi;
     Histo1DPtr _h_t_mass, _h_t_mass_W_cut;
     Histo1DPtr _h_t_pt, _h_t_pt_W_cut;
     Histo1DPtr _h_t_eta,_h_t_eta_W_cut;
