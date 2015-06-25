@@ -393,47 +393,48 @@ namespace Rivet
 
                 _h_top_mass->fill(t1.mass()/GeV,weight);
                 _h_top_mass->fill(t2.mass()/GeV,weight);
+                MSG_INFO("What is picobarn"<<picobarn);
 
             }
 
             void finalize()
             {
-                float norm = crossSection()/sumOfWeights();
-                normalize(_h_event_MET,norm);
-                normalize(_h_event_nJets,norm);
-                normalize(_h_event_HT,norm);
-                normalize(_h_event_nEl,norm);
-                normalize(_h_event_nMu,norm);
+                float norm = crossSection()/picobarn/sumOfWeights();
+                scale(_h_event_MET,norm);
+                scale(_h_event_nJets,norm);
+                scale(_h_event_HT,norm);
+                scale(_h_event_nEl,norm);
+                scale(_h_event_nMu,norm);
             
-                normalize(_h_diEl_mass,norm);
-                normalize(_h_diEl_pt,norm);
-                normalize(_h_diEl_eta,norm);
-                normalize(_h_diEl_phi,norm);
+                scale(_h_diEl_mass,norm);
+                scale(_h_diEl_pt,norm);
+                scale(_h_diEl_eta,norm);
+                scale(_h_diEl_phi,norm);
 
-                normalize(_h_diMu_mass,norm);
-                normalize(_h_diMu_pt,norm);
-                normalize(_h_diMu_eta,norm);
-                normalize(_h_diMu_phi,norm);
+                scale(_h_diMu_mass,norm);
+                scale(_h_diMu_pt,norm);
+                scale(_h_diMu_eta,norm);
+                scale(_h_diMu_phi,norm);
 
-                normalize(_h_WLep_mass,norm);
-                normalize(_h_WLep_pt,norm);
-                normalize(_h_WLep_eta,norm);
-                normalize(_h_WLep_phi,norm);
+                scale(_h_WLep_mass,norm);
+                scale(_h_WLep_pt,norm);
+                scale(_h_WLep_eta,norm);
+                scale(_h_WLep_phi,norm);
 
-                normalize(_h_WHad_mass,norm);
-                normalize(_h_WHad_pt,norm);
-                normalize(_h_WHad_eta,norm);
-                normalize(_h_WHad_phi,norm);
+                scale(_h_WHad_mass,norm);
+                scale(_h_WHad_pt,norm);
+                scale(_h_WHad_eta,norm);
+                scale(_h_WHad_phi,norm);
 
-                normalize(_h_top_mass,norm);
-                normalize(_h_top_pt,norm);
-                normalize(_h_top_eta,norm);
-                normalize(_h_top_phi,norm);
+                scale(_h_top_mass,norm);
+                scale(_h_top_pt,norm);
+                scale(_h_top_eta,norm);
+                scale(_h_top_phi,norm);
 
 
-                normalize(_h_top_dR,norm);
-                normalize(_h_top_dEta,norm);
-                normalize(_h_top_dPhi,norm);
+                scale(_h_top_dR,norm);
+                scale(_h_top_dEta,norm);
+                scale(_h_top_dPhi,norm);
                 
             }
 
