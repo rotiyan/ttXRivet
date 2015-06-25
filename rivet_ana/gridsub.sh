@@ -24,15 +24,13 @@ voms-proxy-init -voms atlas
 #mc12_8TeV.117489.MadGraphPythia_AUET2B_CTEQ6L1_ttbarZ_Np0_MGDec_1lep.evgen.EVNT.e2649
 #mc12_8TeV.117490.MadGraphPythia_AUET2B_CTEQ6L1_ttbarZ_Zll_Np1in_MGDec_1lep.evgen.EVNT.e2649
 
-timeStamep=`date +%H%M%S_%m%Y`
+timeStamp=`date +%H%M%S_%m%Y`
 
-pathena -c 'xs=0.069' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=mc12_8TeV.117489.MadGraphPythia_AUET2B_CTEQ6L1_ttbarZ_Np0_MGDec_1lep.evgen.EVNT.e2649/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.117489_8TeV_ttbarZ/  rivet_MC_jo.py
+#pathena -c 'xs=0.0138' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=mc12_8TeV.117490.MadGraphPythia_AUET2B_CTEQ6L1_ttbarZ_Zll_Np1in_MGDec_1lep.evgen.EVNT.e2649/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.117490_8TeV_ttbarZ/  rivet_MC_jo.py
 
-pathena -c 'xs=0.0138' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=mc12_8TeV.117490.MadGraphPythia_AUET2B_CTEQ6L1_ttbarZ_Zll_Np1in_MGDec_1lep.evgen.EVNT.e2649/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.117490_8TeV_ttbarZ/  rivet_MC_jo.py
-
-pathena -c 'xs=0.00593384' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-07_025202.100000.8TeV_ttZllon_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.100000_8TeV_ttZllon/  rivet_MC_jo.py
+#pathena -c 'xs=0.00593384' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-07_025202.100000.8TeV_ttZllon_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.100000_8TeV_ttZllon/  rivet_MC_jo.py
 #
-pathena -c 'xs=0.00723162' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-07_025225.100001.8TeV_ttZllon_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.100001_8TeV_ttZllon/ rivet_MC_jo.py
+#pathena -c 'xs=0.00723162' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-07_025225.100001.8TeV_ttZllon_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.100001_8TeV_ttZllon/ rivet_MC_jo.py
 #
 #pathena -c 'xs=0.00861146' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-07_025247.200000.8TeV_ttZlloff_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.200000_8TeV_ttZllof_v1/  rivet_MC_jo.py
 #
@@ -42,13 +40,13 @@ pathena -c 'xs=0.00723162' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analys
 #
 #pathena -c 'xs=0.00136184' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-25_193759.911001.8TeV_ttee_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.911001_8TeV_ttee/  rivet_MC_jo.py
 #
-pathena -c 'xs=0.00227596' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-20_103645.500000.8TeV_ttZllon_cteq6l1_EXT1 --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.500000_8TeV_ttZllon_cteq6l1/  rivet_MC_jo.py
+#pathena -c 'xs=0.00227596' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-20_103645.500000.8TeV_ttZllon_cteq6l1_EXT1 --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.500000_8TeV_ttZllon_cteq6l1/  rivet_MC_jo.py
 #
 #pathena -c 'xs=0.00691532' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-20_103709.500001.8TeV_ttZllon_cteq6l1_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.500001_8TeV_ttZllon_cteq6l1/  rivet_MC_jo.py
 #
-pathena -c 'xs=0.00120981' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-25_195805.911100.8TeV_ttee_cteq6l1_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.911100_8TeV_ttee_cteq6l1/  rivet_MC_jo.py
+#pathena -c 'xs=0.00120981' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-25_195805.911100.8TeV_ttee_cteq6l1_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.911100_8TeV_ttee_cteq6l1/  rivet_MC_jo.py
 #
-pathena -c 'xs=0.00117124' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-25_195834.911101.8TeV_ttee_cteq6l1_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.911101_8TeV_ttZllof_v1/  rivet_MC_jo.py
+#pathena -c 'xs=0.00117124' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-25_195834.911101.8TeV_ttee_cteq6l1_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.911101_8TeV_ttZllof_v1/  rivet_MC_jo.py
 #
 #pathena -c 'xs=0.0609748' --noBuild --extFile=RivetTTBAR_ANA.so,RivetTTZ_analysis.so --nFilesPerJob=5 --long --extOutFile ttz_analysis.yoda --inDS=user.mcfayden.evnt.2015-05-27_095528.119355.8TeV_ttZ_MC12_EXT1/ --outDS=user.narayan.${timeStamp}.rivet-MadGraph_MC_ANA.119355_8TeV_ttZ_MC12/  rivet_MC_jo.py
 #
