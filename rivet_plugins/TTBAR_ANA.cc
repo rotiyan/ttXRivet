@@ -34,8 +34,13 @@ namespace Rivet {
       IdentifiedFinalState electrons(FinalState(-4.2, 4.2, 10*GeV));
       electrons.acceptId(PID::ELECTRON);
       electrons.acceptId(PID::POSITRON);
+
+      IdentifiedFinalState muons(FinalState(-4.2,4.2,10*GeV));
+      muons.acceptId(PID::MUON);
+      muons.acceptId(PID::ANTIMUON);
  
       addProjection(electrons, "EFS");
+      addProjection(muons,"MUFS");
       
       ChargedLeptons lfs(FinalState(-4.2,4.2,10*GeV));
       addProjection(lfs,"LFS");
@@ -75,7 +80,7 @@ namespace Rivet {
 
       _h_evnt_MET   = bookHisto1D("MET",500,0,500);
       _h_evnt_njets = bookHisto1D("evnt_njets",20,-0.5,19.5);
-      _h_evnt_HT    = bookHisto1D("evnt_HT",logspace(50,100.0,200.0));
+      _h_evnt_HT    = bookHisto1D("evnt_HT",900,100,1000);
       _h_evnt_nEl   = bookHisto1D("evnt_nEL",20,-0.5,19.5);
       _h_evnt_nLep  = bookHisto1D("evnt_nLep",20,-0.5,19.5);
       _h_evnt_nMu   = bookHisto1D("evnt_nMu",20,-0.5,19.5);
@@ -145,9 +150,9 @@ namespace Rivet {
       _h_t_lep_pt   = bookHisto1D("t_lep_pt",100,0,200);
       _h_t_lep_pt_W_cut= bookHisto1D("t_lep_pt_W_cut",100,0,200);
       //
-      _h_top_dR     = bookHisto1D("top_dR",20,0.0,7.0);
-      _h_top_dEta   = bookHisto1D("top_dEta",20,0.0,7.0);
-      _h_top_dPhi   = bookHisto1D("top_dPhi",20,0.0,7.0);
+      _h_top_dR     = bookHisto1D("top_dR",100,0.0,7.0);
+      _h_top_dEta   = bookHisto1D("top_dEta",100,0.0,7.0);
+      _h_top_dPhi   = bookHisto1D("top_dPhi",100,0.0,7.0);
       //
       _h_jetb_1_jetb_2_dR   = bookHisto1D("jetb_1_jetb_2_dR", 20, 0.0, 7.0);
       _h_jetb_1_jetb_2_deta = bookHisto1D("jetb_1_jetb_2_deta", 20, 0.0, 7.0);
@@ -177,8 +182,7 @@ namespace Rivet {
       
       const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
       const IdentifiedFinalState & electrons = applyProjection<IdentifiedFinalState>(event, "EFS");
-      _h_evnt_nEl->fill(electrons.size(),weight);
-
+      const IdentifiedFinalState & muons     = applyProjection<IdentifiedFinalState>(event, "MUFS");
       const ZFinder & zeeFinder     = applyProjection<ZFinder>(event,"zeeFinder");
       const ZFinder & zmumuFinder   = applyProjection<ZFinder>(event,"zmumuFinder");
       const WFinder & welFinder     = applyProjection<WFinder>(event,"welFinder");
@@ -279,6 +283,10 @@ namespace Rivet {
       //Make all the plots from here
       //
       MSG_INFO("Event passed all cuts: Filling histograms");
+      _h_evnt_nEl->fill(electrons.size(),weight);
+      _h_evnt_nMu->fill(muons.size(),weight);
+
+
       if(zeeFinder.bosons().size()>0)
       {
           FourMomentum zeeMom = zeeFinder.bosons()[0].momentum();
