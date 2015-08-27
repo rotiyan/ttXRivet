@@ -280,7 +280,7 @@ namespace Rivet {
        }
       MSG_INFO("Number of b-jets = " << bjets.size());
       _h_nBjets->fill(bjets.size(),weight);
-      _h_njets->fill(ljets.size(),weight);
+      _h_njets->fill(jets.size(),weight);
 
       MSG_INFO("Number of l-jets = " << ljets.size());
       if (bjets.size() < 2) {
@@ -291,15 +291,16 @@ namespace Rivet {
         MSG_INFO("Event failed since not enough light jets remaining after lepton-isolation");
         vetoEvent;
       }
-      _sumofweight += event.weight();
-
-
+   
       //Make all the plots from here
       //
       MSG_INFO("Event passed all cuts: Filling histograms");
 
       if(zeeFinder.bosons().size()>0)
       {
+          _sumofweight += event.weight();
+
+
           FourMomentum zeeMom = zeeFinder.bosons()[0].momentum();
           _h_zee_mass->fill(zeeMom.mass()/GeV,weight);
           _h_zee_pt->fill(zeeMom.pT()/GeV,weight);
@@ -494,7 +495,7 @@ namespace Rivet {
 
 
     void finalize() {
-      double norm = crossSection()/sumOfWeights();
+      double norm = crossSection()/_sumofweight;
       scale(_h_evnt_MET,norm);
       scale(_h_evnt_njets,norm);
       scale(_h_evnt_HT,norm);
