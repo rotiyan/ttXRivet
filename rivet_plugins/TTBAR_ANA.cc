@@ -27,7 +27,6 @@ namespace Rivet {
 
     /// Set up projections and book histograms
     void init() {
-
       // A FinalState is used to select particles within |eta| < 4.2 and with pT
       // > 30 GeV, out of which the ChargedLeptons projection picks only the
       // electrons and muons, to be accessed later as "LFS".
@@ -495,7 +494,9 @@ namespace Rivet {
 
 
     void finalize() {
-      double norm = crossSection()/_sumofweight;
+        MSG_INFO("CROSS SSECTION:"<<crossSection());
+        MSG_INFO("Sum of weights:"<<sumOfWeights());
+      double norm = crossSection()/sumOfWeights();
       scale(_h_evnt_MET,norm);
       scale(_h_evnt_njets,norm);
       scale(_h_evnt_HT,norm);
