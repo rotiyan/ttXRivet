@@ -300,6 +300,7 @@ namespace Rivet {
       {
           _sumofweight += event.weight();
           _h_weight->fill(weight);
+          MSG_INFO("Weight: "<<weight);
 
 
           FourMomentum zeeMom = zeeFinder.bosons()[0].momentum();
