@@ -76,7 +76,8 @@ namespace Rivet {
       
 
       _sumofweight =0;
-
+    
+      _h_weight     = bookHisto1D("weight",200,-1,1);
       _h_evnt_MET   = bookHisto1D("MET",500,0,700);
       _h_evnt_njets = bookHisto1D("evnt_njets",20,-0.5,19.5);
       _h_evnt_HT    = bookHisto1D("evnt_HT",900,100,1000);
@@ -298,6 +299,7 @@ namespace Rivet {
       if(zeeFinder.bosons().size()>0)
       {
           _sumofweight += event.weight();
+          _h_weight->fill(weight);
 
 
           FourMomentum zeeMom = zeeFinder.bosons()[0].momentum();
@@ -497,6 +499,7 @@ namespace Rivet {
         MSG_INFO("CROSS SSECTION:"<<crossSection());
         MSG_INFO("Sum of weights:"<<sumOfWeights());
       double norm = crossSection()/sumOfWeights();
+
       scale(_h_evnt_MET,norm);
       scale(_h_evnt_njets,norm);
       scale(_h_evnt_HT,norm);
@@ -583,6 +586,7 @@ namespace Rivet {
     // @name Histogram data members
     //@{
 
+    Histo1DPtr _h_weight;
     Histo1DPtr _h_evnt_MET;
     Histo1DPtr _h_evnt_njets;
     Histo1DPtr _h_evnt_HT;
