@@ -77,7 +77,7 @@ namespace Rivet {
 
       _sumofweight =0;
     
-      _h_weight     = bookHisto1D("weight",200,-1,1);
+      _h_weight     = bookHisto1D("weight",200,-20,20);
       _h_evnt_MET   = bookHisto1D("MET",500,0,700);
       _h_evnt_njets = bookHisto1D("evnt_njets",20,-0.5,19.5);
       _h_evnt_HT    = bookHisto1D("evnt_HT",900,100,1000);
