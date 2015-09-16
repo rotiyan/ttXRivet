@@ -78,9 +78,9 @@ namespace Rivet {
       _sumofweight =0;
     
       _h_weight     = bookHisto1D("weight",200,-20,20);
-      _h_evnt_MET   = bookHisto1D("MET",500,0,700);
+      _h_evnt_MET   = bookHisto1D("MET",200,0,800);
       _h_evnt_njets = bookHisto1D("evnt_njets",20,-0.5,19.5);
-      _h_evnt_HT    = bookHisto1D("evnt_HT",900,100,1000);
+      _h_evnt_HT    = bookHisto1D("evnt_HT",200,100,900);
       _h_evnt_nEl   = bookHisto1D("evnt_nEL",20,-0.5,19.5);
       _h_evnt_nMu   = bookHisto1D("evnt_nMu",20,-0.5,19.5);
       _h_3el_evnt_m3e= bookHisto1D("3elevnt_m3e",120,0,120);
@@ -195,9 +195,6 @@ namespace Rivet {
           vetoEvent;
       }
 
-      _h_evnt_nEl->fill(electrons.size(),weight);
-      _h_evnt_nMu->fill(muons.size(),weight);
-
 
       
       // Get all charged particles
@@ -295,14 +292,16 @@ namespace Rivet {
       //Make all the plots from here
       //
       MSG_INFO("Event passed all cuts: Filling histograms");
+      
+      _h_weight->fill(weight);
+      _h_evnt_nEl->fill(electrons.size(),weight);
+      _h_evnt_nMu->fill(muons.size(),weight);
+
+      _sumofweight += event.weight();
+
 
       if(zeeFinder.bosons().size()>0)
       {
-          _sumofweight += event.weight();
-          _h_weight->fill(weight);
-          MSG_INFO("Weight: "<<weight);
-
-
           FourMomentum zeeMom = zeeFinder.bosons()[0].momentum();
           _h_zee_mass->fill(zeeMom.mass()/GeV,weight);
           _h_zee_pt->fill(zeeMom.pT()/GeV,weight);
