@@ -78,7 +78,8 @@ namespace Rivet {
       _sumofweight =0;
     
       _h_weight     = bookHisto1D("weight",200,-20,20);
-      _h_evnt_MET   = bookHisto1D("MET",200,0,800);
+      _h_evnt_MET_before   = bookHisto1D("MET_before",200,0,800);
+      _h_evnt_MET_after = bookHisto1D("MET_after",200,0,800);
       _h_evnt_njets = bookHisto1D("evnt_njets",20,-0.5,19.5);
       _h_evnt_HT    = bookHisto1D("evnt_HT",200,100,900);
       _h_evnt_nEl   = bookHisto1D("evnt_nEL",20,-0.5,19.5);
@@ -86,57 +87,57 @@ namespace Rivet {
       _h_3el_evnt_m3e= bookHisto1D("3elevnt_m3e",120,0,120);
       _h_4el_evnt_m4e= bookHisto1D("4elevnt_m4e",120,0,120);
 
-      // Booking of histograms
+      //
       _h_njets = bookHisto1D("jet_l_mult", 11, -0.5, 10.5);
       _h_nBjets= bookHisto1D("jet_b_Mult",11,-0.4,10.5);
       //
-      _h_jet_1_pT = bookHisto1D("jet_1_pT", logspace(50, 20.0, 500.0));
-      _h_jet_2_pT = bookHisto1D("jet_2_pT", logspace(50, 20.0, 400.0));
-      _h_jet_3_pT = bookHisto1D("jet_3_pT", logspace(50, 20.0, 300.0));
-      _h_jet_4_pT = bookHisto1D("jet_4_pT", logspace(50, 20.0, 200.0));
+      _h_jet_1_pT = bookHisto1D("jet_1_pT", 100,10,410);
+      _h_jet_2_pT = bookHisto1D("jet_2_pT", 100,10,410);
+      _h_jet_3_pT = bookHisto1D("jet_3_pT", 100,10,410);
+      _h_jet_4_pT = bookHisto1D("jet_4_pT", 100,10,410);
       //
-      _h_bjet_1_pT = bookHisto1D("jetb_1_pT", logspace(50, 20.0, 400.0));
-      _h_bjet_2_pT = bookHisto1D("jetb_2_pT", logspace(50, 20.0, 300.0));
+      _h_bjet_1_pT = bookHisto1D("jetb_1_pT", 100,10,410);
+      _h_bjet_2_pT = bookHisto1D("jetb_2_pT", 100,10,410);
       //
-      _h_ljet_1_pT = bookHisto1D("jetl_1_pT", logspace(50, 20.0, 400.0));
-      _h_ljet_2_pT = bookHisto1D("jetl_2_pT", logspace(50, 20.0, 300.0));
+      _h_ljet_1_pT = bookHisto1D("jetl_1_pT", 100,10,410);
+      _h_ljet_2_pT = bookHisto1D("jetl_2_pT", 100,10,410);
       //
       _h_W_had_mass = bookHisto1D("W_had_mass", 120, 5, 115);
-      _h_W_had_pt   = bookHisto1D("W_had_pt",100,20.0,200);
+      _h_W_had_pt   = bookHisto1D("W_had_pt",100,10.0,410);
       _h_W_had_eta  = bookHisto1D("W_had_eta",50,-4,4);
       _h_W_had_phi  = bookHisto1D("W_hadd_phi",50,0,6);
       //
       _h_zee_mass   = bookHisto1D("Z_ee_mass",120,5,115);
-      _h_zee_pt     = bookHisto1D("Z_ee_pt",100,0,200);
+      _h_zee_pt     = bookHisto1D("Z_ee_pt",100,0,400);
       _h_zee_eta    = bookHisto1D("Z_ee_eta",50,-5,5);
       _h_zee_phi    = bookHisto1D("Z_ee_phi",50,0,6);
-      _h_zel_pt     = bookHisto1D("Zel_pt",150,0,150);
+      _h_zel_pt     = bookHisto1D("Zel_pt",100,0,400);
       _h_zel_eta    = bookHisto1D("Zel_eta",50,-5,5);
       _h_zel_phi    = bookHisto1D("Zel_phi",50,0,6);
       //
       _h_zmumu_mass = bookHisto1D("Z_mumu_mass",120,5,115);
-      _h_zmumu_pt   = bookHisto1D("Z_mumu_pt",100,0,200);
+      _h_zmumu_pt   = bookHisto1D("Z_mumu_pt",100,0,400);
       _h_zmumu_eta  = bookHisto1D("Z_mumu_eta",50,-5,5);
       _h_zmumu_phi  = bookHisto1D("Z_mumu_phi",50,0,6);
-      _h_zmu_pt     = bookHisto1D("Zmu_pt",100,0,200);
+      _h_zmu_pt     = bookHisto1D("Zmu_pt",100,0,400);
       _h_zmu_eta    = bookHisto1D("Zmu_eta",50,-5,5);
       _h_zmu_phi    = bookHisto1D("Zmu_phi",50,0,6);
       //
       _h_wenu_mass  = bookHisto1D("W_enu_mass",120,5,115);
-      _h_wenu_pt    = bookHisto1D("W_enu_pt",100,0,200);
-      _h_wenu_mt    = bookHisto1D("W_enu_mt",200,0,200);
+      _h_wenu_pt    = bookHisto1D("W_enu_pt",100,0,400);
+      _h_wenu_mt    = bookHisto1D("W_enu_mt",200,0,400);
       _h_wenu_eta   = bookHisto1D("W_enu_eta",50,-5,5);
       _h_wenu_phi   = bookHisto1D("W_enu_phi",50,0,6);
-      _h_wel_pt     = bookHisto1D("W_el_pt",100,0,200);
+      _h_wel_pt     = bookHisto1D("W_el_pt",100,0,400);
       _h_wel_eta    = bookHisto1D("W_el_eta",50,-5,5);
       _h_wel_phi    = bookHisto1D("W_el_phi",50,0,6);
       //
       _h_wmunu_mass = bookHisto1D("W_munu_mass",120,5,115);
-      _h_wmunu_pt   = bookHisto1D("W_munu_pt",100,0,200);
-      _h_wmunu_mt   = bookHisto1D("W_munu_mt",200,0,200);
+      _h_wmunu_pt   = bookHisto1D("W_munu_pt",100,0,400);
+      _h_wmunu_mt   = bookHisto1D("W_munu_mt",100,0,400);
       _h_wmunu_eta  = bookHisto1D("W_munu_eta",50,-5,5);
       _h_wmunu_phi  = bookHisto1D("W_munu_phi",50,0,6);
-      _h_wmu_pt     = bookHisto1D("W_mu_pt",100,0,200);
+      _h_wmu_pt     = bookHisto1D("W_mu_pt",100,0,400);
       _h_wmu_eta    = bookHisto1D("W_mu_eta",50,-5,5);
       _h_wmu_phi    = bookHisto1D("W_mu_phi",50,0,6);
       //
@@ -225,7 +226,7 @@ namespace Rivet {
       // Use a missing ET cut to bias toward events with a hard neutrino from
       // the leptonically decaying W. This helps to reduce pure QCD backgrounds.
       const MissingMomentum& met = applyProjection<MissingMomentum>(event, "MissingET");
-      _h_evnt_MET->fill(met.vectorEt().mod(),weight);
+      _h_evnt_MET_before->fill(met.vectorEt().mod(),weight);
       MSG_INFO("Vector ET = " << met.vectorEt().mod() << " GeV");
  
       const FastJets& jetpro = applyProjection<FastJets>(event, "Jets");
@@ -235,7 +236,8 @@ namespace Rivet {
       foreach (const Jet& j, jets) { ht += j.pT(); }
       _h_evnt_HT->fill(ht/GeV, weight);
  
-      if (met.vectorEt().mod() < 30*GeV && (welFinder.bosons().size()<1 || wmuFinder.bosons().size()<1)) {
+      if (met.vectorEt().mod() < 30*GeV && (welFinder.bosons().size()<1 || wmuFinder.bosons().size()<1)) 
+      {
         MSG_INFO("Event failed missing ET cut, or couldn't find leptonically decaying W candidate");
         vetoEvent;
       }
@@ -257,8 +259,10 @@ namespace Rivet {
       foreach (const Jet& jet, jets) {
         // // Don't count jets that overlap with the hard leptons
         bool isolated = true;
-        foreach (const Particle& lepton, lfs.chargedLeptons()) {
-          if (deltaR(jet.momentum(), lepton.momentum()) < 0.4) {
+        foreach (const Particle& lepton, lfs.chargedLeptons()) 
+        {
+          if (deltaR(jet.momentum(), lepton.momentum()) < 0.4) 
+          {
             isolated = false;
             break;
           }
@@ -293,6 +297,7 @@ namespace Rivet {
       //
       MSG_INFO("Event passed all cuts: Filling histograms");
       
+      _h_evnt_MET_after->fill(met.vectorEt().mod(),weight);
       _h_weight->fill(weight);
       _h_evnt_nEl->fill(electrons.size(),weight);
       _h_evnt_nMu->fill(muons.size(),weight);
@@ -500,7 +505,8 @@ namespace Rivet {
         MSG_INFO("Sum of weights:"<<sumOfWeights());
       double norm = crossSection()/sumOfWeights();
 
-      scale(_h_evnt_MET,norm);
+      scale(_h_evnt_MET_before,norm);
+      scale(_h_evnt_MET_after,norm);
       scale(_h_evnt_njets,norm);
       scale(_h_evnt_HT,norm);
       scale(_h_evnt_nEl,norm);
@@ -587,7 +593,7 @@ namespace Rivet {
     //@{
 
     Histo1DPtr _h_weight;
-    Histo1DPtr _h_evnt_MET;
+    Histo1DPtr _h_evnt_MET_before, _h_evnt_MET_after;
     Histo1DPtr _h_evnt_njets;
     Histo1DPtr _h_evnt_HT;
     Histo1DPtr _h_evnt_nEl;
