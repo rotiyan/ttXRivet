@@ -17,7 +17,8 @@ import os
 rivet = Rivet_i()
 rivet.AnalysisPath = os.environ['PWD']
 
-rivet.Analyses +=["TTBAR_ANA"]
+#rivet.Analyses +=["TTBAR_ANA","hepmc_analysis"]
+rivet.Analyses +=["hepmc_analysis"]
 #rivet.Analyses += ['TTZ_analysis','hepmc_analysis','TTBAR_ANA']
 #rivet.Analyses += [ 'MC_JET','PDFS','GENERIC','PHOTONS','PHOTONINC','WINC','TTBAR_ANA','HFJET_ANA','ZINC','JETTAGS']
 #rivet.Analyses+=["TTBAR_ANA"]
