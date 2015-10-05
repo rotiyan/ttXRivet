@@ -23,6 +23,52 @@
 
 namespace Rivet {
 
+    void getDaughters(const HepMC::GenParticle*p, const HepMC::GenVertex *ev, Particles& container)
+    {
+        HepMC::GenParticle *daughter =0; 
+        static int pdgOriginal = p->pdg_id();
+        if(ev->particles_out_size()>=1)
+        {
+            for(HepMC::GenVertex::particles_out_const_iterator iter1 = ev->particles_out_const_begin(); iter1 != ev->particles_out_const_end();++iter1)
+            {
+                if((*iter1)->pdg_id()==6)
+                {
+                    GenVertex *ev1 = (*iter1)->end_vertex();
+                    if(ev1)
+                    {
+                        for(HepMC::GenVertex::particles_out_const_iterator iter2 = ev1->particles_out_const_begin(); iter2 != ev1->particles_out_const_end();++iter2)
+                        {
+                            if((*iter2)->pdg_id()==6)
+                            {
+                                GenVertex *ev2 = (*iter2)->end_vertex();
+                                for(HepMC::GenVertex::particles_out_const_iterator iter3 = ev2->particles_out_const_begin(); iter3 != ev2->particles_out_const_end();++iter3)
+                                {
+                                    if((*iter3)->pdg_id()==6)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        container.push_back(*iter3);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                container.push_back((*iter2));
+                            }
+                        }
+                    }
+
+                }
+                else{
+                    container.push_back((*iter1));
+                }
+            }
+        }
+    }
+
+
   using namespace Cuts;
 
   class hepmc_analysis: public Analysis {
@@ -50,17 +96,30 @@ namespace Rivet {
         _h_mu_mult  = bookHisto1D("mu_mult",10,-0.5,9.5);
         _h_m_mumu   = bookHisto1D("m_mumu",100,5,145);
 
-        _h_t_mass   = bookHisto1D("t_mass",150,130,430);
-        _h_t_pt     = bookHisto1D("t_pt",100,0,20);
-        _h_t_eta    = bookHisto1D("t_eta",100,-5,5);
-        _h_t_phi    = bookHisto1D("t_phi",50,0,6);
+        _h_t1_mass  = bookHisto1D("t1_mass",150,130,430);
+        _h_t2_mass  = bookHisto1D("t2_mass",150,130,430);
+        _h_t1_pt    = bookHisto1D("t1_pt",100,50,450);
+        _h_t2_pt    = bookHisto1D("t2_pt",100,50,450);
+        _h_t1_eta   = bookHisto1D("t1_eta",100,-5,5);
+        _h_t2_eta   = bookHisto1D("t2_eta",100,-5,5);
+        _h_t1_phi   = bookHisto1D("t1_phi",50,0,6);
+        _h_t2_phi   = bookHisto1D("t2_phi",50,0,6);
         _h_b1_pt    = bookHisto1D("b1_pt",100,0,400);
+        _h_b1_eta   = bookHisto1D("b1_eta",100,-5,5);
+        _h_b1_phi   = bookHisto1D("b1_phi",100,-5,5);
         _h_b2_pt    = bookHisto1D("b2_pt",100,0,400);
-        _h_w_mass   = bookHisto1D("w_mass",120,5,115);
-        _h_w_pt     = bookHisto1D("w_pt",100,0,400);
-        _h_w_eta    = bookHisto1D("w_eta",100,-5,5);
-        _h_w_phi    = bookHisto1D("w_phi",50,0,6);
+        _h_b2_eta   = bookHisto1D("b2_eta",100,-5,5);
+        _h_b2_phi   = bookHisto1D("b2_phi",100,-5,5);
+        _h_w1_mass  = bookHisto1D("w1_mass",100,0,120);
+        _h_w2_mass  = bookHisto1D("w2_mass",100,0,120);
+        _h_w1_pt    = bookHisto1D("w1_pt",100,0,400);
+        _h_w2_pt    = bookHisto1D("w2_pt",100,0,400);
+        _h_w1_eta   = bookHisto1D("w1_eta",100,-5,5);
+        _h_w2_eta   = bookHisto1D("w2_eta",100,-5,5);
+        _h_w1_phi   = bookHisto1D("w1_phi",100,-5,5);
+        _h_w2_phi   = bookHisto1D("w2_phi",100,-5,5);
 
+        
         _h_e_dEta   = bookHisto1D("zel_dEta",100,0,7);
         _h_e_dPhi   = bookHisto1D("zel_dPhi",100,0,7);
         _h_e_dR     = bookHisto1D("zel_dR",100,0,7);
@@ -92,80 +151,59 @@ namespace Rivet {
       //DO PDG analysis
       vector<HepMC::GenParticle*> genParticles = particles(event.genEvent());
       Particles ePlus,eMinus,muPlus,muMinus;
-      Particles bPairContainer;
-      Particles wPairContainer;
-      Particles topPairContainer;
+      Particles wCands,bCands,topCands;
 
-      for(size_t i = 0; i < genParticles.size(); ++i)
+      foreach(const GenParticle *part, particles(event.genEvent()))
       {
-          GenParticle * part = genParticles.at(i);
-          if(fabs(part->pdg_id())==6 && part->momentum().perp()*GeV >10 && abs(part->momentum().eta()) <5)
+          if(part->momentum().perp()*GeV >10 && fabs(part->momentum().eta()) <2.5)
           {
-              //MSG_INFO("Status of top : "<<part->status() );
-          }
-          if(fabs(part->pdg_id()) ==11 && part->status()==1 )
-          {
-              GenVertex  * pv = part->production_vertex();
-              for(GenVertex::particles_in_const_iterator iter = pv->particles_in_const_begin(); iter != pv->particles_in_const_end();++iter)
+              if(fabs(part->pdg_id()) ==11 && part->status()==1 && part->momentum().perp()*GeV >10 )
               {
-                  if( abs((*iter)->pdg_id())!=24) //Make sure that the lepton parent is not a W
+                  GenVertex  * pv = part->production_vertex();
+                  for(GenVertex::particles_in_const_iterator iter = pv->particles_in_const_begin(); iter != pv->particles_in_const_end();++iter)
                   {
-                      if(part->pdg_id()==11)
-                          ePlus.push_back(Particle(part));
-                      else if (part->pdg_id()==-11)
-                          eMinus.push_back(Particle(part));
-                      
-                      _h_el_pt->fill(part->momentum().perp()*GeV,weight);
-                      _h_el_eta->fill(part->momentum().eta(),weight);
+                      if( abs((*iter)->pdg_id())!=24 && abs((*iter)->pdg_id())!=5) //Make sure that the lepton parent is not a W or a b
+                      {
+                          if(part->pdg_id()==11)
+                              ePlus.push_back(Particle(part));
+                          else if (part->pdg_id()==-11)
+                              eMinus.push_back(Particle(part));
+                          
+                          _h_el_pt->fill(part->momentum().perp()*GeV,weight);
+                          _h_el_eta->fill(part->momentum().eta(),weight);
+                      }
                   }
               }
-          }
-          if(fabs(part->pdg_id())==13 && part->status()==1 && part->momentum().perp()*GeV >10)
-          {
-              GenVertex *pv = part->production_vertex();
-              for(GenVertex::particles_in_const_iterator iter = pv->particles_in_const_begin(); iter!= pv->particles_in_const_end(); ++iter)
+              if(fabs(part->pdg_id())==13 && part->status()==1 && part->momentum().perp()*GeV >10)
               {
-                  if(abs((*iter)->pdg_id())!=24)
+                  GenVertex *pv = part->production_vertex();
+                  for(GenVertex::particles_in_const_iterator iter = pv->particles_in_const_begin(); iter!= pv->particles_in_const_end(); ++iter)
                   {
-                      if(part->pdg_id()==13)
-                          muMinus.push_back(Particle(part));
-                      else if (part->pdg_id()==-13)
-                          muPlus.push_back(Particle(part));
+                      if(abs((*iter)->pdg_id())!=24 && abs((*iter)->pdg_id())!=5)
+                      {
+                          if(part->pdg_id()==13)
+                              muMinus.push_back(Particle(part));
+                          else if (part->pdg_id()==-13)
+                              muPlus.push_back(Particle(part));
+                      }
                   }
               }
-          }
-          if(fabs(part->pdg_id()==6))
-          {
-              GenVertex* ev = part->end_vertex();
-
-              bool foundTopTo_b = false;
-              bool foundTopTo_w = false;
-              Particles b_fromTop,w_fromTop;
-              for(GenVertex::particles_in_const_iterator iter = ev->particles_out_const_begin(); iter !=ev->particles_out_const_end(); ++iter)
+              //Select W-bosons
+              if(fabs(part->pdg_id()) == 24)
               {
-                  if(abs((*iter)->pdg_id()) ==6)
-                      continue;
-
-                  MSG_INFO("Daughters of top"<< (*iter)->pdg_id());
-                  if(abs((*iter)->pdg_id())==5)
-                  {
-                      b_fromTop.push_back(Particle(*iter));
-                      foundTopTo_b = true;
-                  }
-                  if(abs((*iter)->pdg_id())==24)
-                  {
-                      w_fromTop.push_back(Particle(*iter));
-                      foundTopTo_w=true;
-                  }
+                  wCands.push_back(Particle(part));
               }
-              if(foundTopTo_b  && foundTopTo_w)
+              if(fabs(part->pdg_id()) == 5)
               {
-                  topPairContainer.push_back(Particle(part));
-                  bPairContainer.push_back(b_fromTop[0]);
-                  wPairContainer.push_back(w_fromTop[0]);
+                  bCands.push_back(Particle(part));
+              }
+              if(fabs(part->pdg_id())==6)
+              {
+                  topCands.push_back(Particle(part));
               }
           }
       }
+      
       //Electrons and muons
       _h_el_mult->fill(ePlus.size() + eMinus.size(),weight);
       _h_mu_mult->fill(muPlus.size() + muMinus.size(),weight);
@@ -188,25 +226,81 @@ namespace Rivet {
           _h_mu_dR->fill(deltaR(muPlus[0],muMinus[0]),weight);
       }
 
-      //b-s,w-s and top-s
-      if(topPairContainer.size()==2)
+      Particles wBosons, topQuarks, bQuarks;
+
+      foreach( const Particle& topQ, topCands)
       {
-          _h_top_dEta->fill(deltaEta(topPairContainer[0],topPairContainer[1]),weight);
-          _h_top_dPhi->fill(deltaPhi(topPairContainer[0],topPairContainer[1]),weight);
-          _h_top_dR->fill(deltaR(topPairContainer[0],topPairContainer[1]),weight);
+          foreach (const Particle &W, wCands)
+          {
+              foreach (const Particle &b, bCands)
+              {
+                  GenVertex *bVert = b.genParticle()->production_vertex();
+                  GenVertex *wVert = W.genParticle()->production_vertex();
+                  for(GenVertex::particles_in_const_iterator bvIter = bVert->particles_in_const_begin(); bvIter != bVert->particles_in_const_end(); ++bvIter)
+                  {
+                      for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin();wvIter != wVert->particles_in_const_end(); ++wvIter)
+                      {
+                          GenParticle *bParent  = (*bvIter);
+                          GenParticle *wParent  = (*wvIter);
+
+
+                          if(topQ.genParticle()->barcode() == bParent->barcode() && topQ.genParticle()->barcode() == wParent->barcode())
+                          {
+                              //You found top->b,w vertex
+                              topQuarks.push_back(topQ);
+                              wBosons.push_back(W);
+                              bQuarks.push_back(b);
+                          }
+                      }
+                  }
+              }
+          }
       }
-      if(bPairContainer.size()==2)
+
+      sortByPt(topQuarks);
+      sortByPt(bQuarks);
+      sortByPt(wBosons);
+
+      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2)
       {
-          _h_b_dEta->fill(deltaEta(bPairContainer[0],bPairContainer[1]),weight);
-          _h_b_dPhi->fill(deltaPhi(bPairContainer[0],bPairContainer[1]),weight);
-          _h_b_dR->fill(deltaR(bPairContainer[0],bPairContainer[1]),weight);
+          _h_top_dEta->fill(deltaEta(topQuarks[0],topQuarks[1]),weight);
+          _h_top_dPhi->fill(deltaPhi(topQuarks[0],topQuarks[1]),weight);
+          _h_top_dR->fill(deltaR(topQuarks[0],topQuarks[1]),weight);
+     
+          _h_t1_mass->fill(topQuarks[0].momentum().mass()*GeV,weight);
+          _h_t1_pt->fill(topQuarks[0].momentum().perp()*GeV,weight);
+          _h_t1_eta->fill(topQuarks[0].momentum().eta(),weight);
+          _h_t1_phi->fill(topQuarks[0].momentum().phi(),weight);
+          _h_t2_mass->fill(topQuarks[1].momentum().mass()*GeV,weight);
+          _h_t2_pt->fill(topQuarks[1].momentum().perp()*GeV,weight);
+          _h_t2_eta->fill(topQuarks[1].momentum().eta(),weight);
+          _h_t2_phi->fill(topQuarks[1].momentum().phi(),weight);
+          
+
+          _h_b_dEta->fill(deltaEta(bQuarks[0],bQuarks[1]),weight);
+          _h_b_dPhi->fill(deltaPhi(bQuarks[0],bQuarks[1]),weight);
+          _h_b_dR->fill(deltaR(bQuarks[0],bQuarks[1]),weight);
+          _h_b1_pt->fill(bQuarks[0].momentum().perp()*GeV,weight);
+          _h_b1_eta->fill(bQuarks[0].momentum().eta(),weight);
+          _h_b1_phi->fill(bQuarks[0].momentum().phi(),weight);
+          _h_b2_pt->fill(bQuarks[1].momentum().perp()*GeV,weight);
+          _h_b2_eta->fill(bQuarks[1].momentum().eta(),weight);
+          _h_b2_phi->fill(bQuarks[1].momentum().phi(),weight);
+
+          _h_w_dEta->fill(deltaEta(wBosons[0],wBosons[1]),weight);
+          _h_w_dPhi->fill(deltaPhi(wBosons[0],wBosons[1]),weight);
+          _h_w_dR->fill(deltaR(wBosons[0],wBosons[1]),weight);
+          _h_w1_mass->fill(wBosons[0].momentum().mass()*GeV,weight);
+          _h_w1_pt->fill(wBosons[0].momentum().perp()*GeV,weight);
+          _h_w1_eta->fill(wBosons[0].momentum().eta(),weight);
+          _h_w1_phi->fill(wBosons[0].momentum().phi(),weight);
+          _h_w2_mass->fill(wBosons[1].momentum().mass()*GeV,weight);
+          _h_w2_pt->fill(wBosons[1].momentum().perp()*GeV,weight);
+          _h_w2_eta->fill(wBosons[1].momentum().eta(),weight);
+          _h_w2_phi->fill(wBosons[1].momentum().phi(),weight);
       }
-      if(wPairContainer.size()==2)
-      {
-          _h_w_dEta->fill(deltaEta(wPairContainer[0],wPairContainer[1]),weight);
-          _h_w_dPhi->fill(deltaPhi(wPairContainer[0],wPairContainer[1]));
-          _h_w_dR->fill(deltaR(wPairContainer[0],wPairContainer[1]));
-      }
+
+                      
     }
      
     /// Normalise histograms etc., after the run
@@ -222,16 +316,28 @@ namespace Rivet {
         scale(_h_m_ee,norm);
         scale(_h_m_mumu,norm);
 
-        scale(_h_t_mass,norm);
-        scale(_h_t_pt,norm);
-        scale(_h_t_eta,norm);
-        scale(_h_t_phi,norm);
+        scale(_h_t1_mass,norm);
+        scale(_h_t2_mass,norm);
+        scale(_h_t1_pt,norm);
+        scale(_h_t2_pt,norm);
+        scale(_h_t1_eta,norm);
+        scale(_h_t2_eta,norm);
+        scale(_h_t1_phi,norm);
+        scale(_h_t2_phi,norm);
         scale(_h_b1_pt,norm);
+        scale(_h_b1_eta,norm);
+        scale(_h_b1_phi,norm);
         scale(_h_b2_pt,norm);
-        scale(_h_w_mass,norm);
-        scale(_h_w_pt,norm);
-        scale(_h_w_eta,norm);
-        scale(_h_w_phi,norm);
+        scale(_h_b2_eta,norm);
+        scale(_h_b2_phi,norm);
+        scale(_h_w1_mass,norm);
+        scale(_h_w2_mass,norm);
+        scale(_h_w1_pt,norm);
+        scale(_h_w2_pt,norm);
+        scale(_h_w1_eta,norm);
+        scale(_h_w2_eta,norm);
+        scale(_h_w1_phi,norm);
+        scale(_h_w2_phi,norm);
 
         //Delta distributions
         scale(_h_e_dEta,norm);
@@ -262,16 +368,28 @@ namespace Rivet {
     Histo1DPtr _h_el_mult,_h_mu_mult;
     Histo1DPtr _h_m_ee,_h_m_mumu;
 
-    Histo1DPtr _h_t_mass;
-    Histo1DPtr _h_t_pt;
-    Histo1DPtr _h_t_eta;
-    Histo1DPtr _h_t_phi;
+    Histo1DPtr _h_t1_mass;
+    Histo1DPtr _h_t2_mass;
+    Histo1DPtr _h_t1_pt;
+    Histo1DPtr _h_t2_pt;
+    Histo1DPtr _h_t1_eta;
+    Histo1DPtr _h_t2_eta;
+    Histo1DPtr _h_t1_phi;
+    Histo1DPtr _h_t2_phi;
     Histo1DPtr _h_b1_pt;
+    Histo1DPtr _h_b1_eta;
+    Histo1DPtr _h_b1_phi;
     Histo1DPtr _h_b2_pt;
-    Histo1DPtr _h_w_mass;
-    Histo1DPtr _h_w_pt;
-    Histo1DPtr _h_w_eta;
-    Histo1DPtr _h_w_phi;
+    Histo1DPtr _h_b2_eta;
+    Histo1DPtr _h_b2_phi;
+    Histo1DPtr _h_w1_mass;
+    Histo1DPtr _h_w2_mass;
+    Histo1DPtr _h_w1_pt;
+    Histo1DPtr _h_w2_pt;
+    Histo1DPtr _h_w1_eta;
+    Histo1DPtr _h_w2_eta;
+    Histo1DPtr _h_w1_phi;
+    Histo1DPtr _h_w2_phi;
 
     Histo1DPtr _h_e_dEta;
     Histo1DPtr _h_e_dPhi;
