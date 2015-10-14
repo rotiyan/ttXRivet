@@ -466,6 +466,7 @@ namespace Rivet {
         MSG_INFO("W found with mass " << W.mass()/GeV << " GeV");
         if(fabs(target_topMass - t1.mass()) < fabs(target_topMass - t2.mass()))
         {
+	    MSG_INFO("Fillin W's");
             _h_t_mass_W_cut->fill(t1.mass()/GeV, weight);
             _h_t_pt_W_cut->fill(t1.pT()/GeV,weight);
         }
@@ -474,7 +475,7 @@ namespace Rivet {
             _h_t_mass_W_cut->fill(t2.mass(), weight);
             _h_t_pt_W_cut->fill(t2.pT()/GeV,weight);
         }
-
+	MSG_INFO("Filling jets");
         _h_jetb_1_jetb_2_dR->fill(deltaR(bjets[0].momentum(), bjets[1].momentum()),weight);
         _h_jetb_1_jetb_2_deta->fill(fabs(bjets[0].eta()-bjets[1].eta()),weight);
         _h_jetb_1_jetb_2_dphi->fill(deltaPhi(bjets[0].momentum(),bjets[1].momentum()),weight);
@@ -491,11 +492,14 @@ namespace Rivet {
         _h_jetb_1_W_deta->fill(fabs(bjets[0].eta()-W.eta()),weight);
         _h_jetb_1_W_dphi->fill(deltaPhi(bjets[0].momentum(),W),weight);
 
-        FourMomentum l=lfs.chargedLeptons()[0].momentum();
+	MSG_INFO("Filling leptons jets");
+
+        /*FourMomentum l=lfs.chargedLeptons()[0].momentum();
         _h_jetb_1_l_dR->fill(deltaR(bjets[0].momentum(), l),weight);
         _h_jetb_1_l_deta->fill(fabs(bjets[0].eta()-l.eta()),weight);
         _h_jetb_1_l_dphi->fill(deltaPhi(bjets[0].momentum(),l),weight);
         _h_jetb_1_l_mass->fill(FourMomentum(bjets[0].momentum()+l).mass(), weight);
+	MSG_INFO("AM I being called");*/
       }
     }
 
