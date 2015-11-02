@@ -39,17 +39,6 @@ namespace Rivet {
 
     /// Book histograms and initialise projections before the run
     void init() {
-
-        _h_el_pt    = bookHisto1D("el_pt",200,10,410);
-        _h_el_eta   = bookHisto1D("el_eta",100,-5,5);
-        _h_el_mult  = bookHisto1D("el_mult",10,-0.5,9.5);
-        _h_m_ee     = bookHisto1D("m_ee",100,5,145);
-
-        _h_mu_pt    = bookHisto1D("mu_pt",200,10,410);
-        _h_mu_eta   = bookHisto1D("mu_eta",100,-5,5);
-        _h_mu_mult  = bookHisto1D("mu_mult",10,-0.5,9.5);
-        _h_m_mumu   = bookHisto1D("m_mumu",100,5,145);
-
         _h_t1_mass  = bookHisto1D("t1_mass",150,130,430);
         _h_t2_mass  = bookHisto1D("t2_mass",150,130,430);
         _h_t1_pt    = bookHisto1D("t1_pt",100,50,450);
@@ -93,6 +82,15 @@ namespace Rivet {
         _h_b_dEta   = bookHisto1D("b_dEta",100,0,7);
         _h_b_dPhi   = bookHisto1D("b_dPhi",100,0,7);
         _h_b_dR     = bookHisto1D("b_dR",100,0,7);
+
+        _h_wPlusME_pt = bookHisto1D("wPlus_pt",100,0,400);
+        _h_wPlusME_eta= bookHisto1D("WPlus_eta",100,-5,5);
+        _h_wPlusME_phi= bookHisto1D("WPlus_phi",100,-5,5);
+
+        _h_wMinusME_pt = bookHisto1D("wMinus_pt",100,0,400);
+        _h_wMinusME_eta= bookHisto1D("WMinus_eta",100,-5,5);
+        _h_wMinusME_phi= bookHisto1D("WMinus_phi",100,-5,5);
+ 
         
     }
 
@@ -104,39 +102,12 @@ namespace Rivet {
 
       //DO PDG analysis
       vector<HepMC::GenParticle*> genParticles = particles(event.genEvent());
-      Particles electrons,muons
       Particles wCands,bCands,topCands;
 
       foreach(const GenParticle *part, particles(event.genEvent()))
       {
           if(part->momentum().perp()*GeV >10 && fabs(part->momentum().eta()) <2.5)
           {
-              if(fabs(part->pdg_id()) ==11 && part->status()==1 && part->momentum().perp()*GeV >10 )
-              {
-                  GenVertex  * pv = part->production_vertex();
-                  for(GenVertex::particles_in_const_iterator iter = pv->particles_in_const_begin(); iter != pv->particles_in_const_end();++iter)
-                  {
-                      if(abs((*iter)->pdg_id())!=5) //Make sure that the lepton parent is not a b
-                      {
-                          electrons.push_back(Particle(part));
-                          _h_el_pt->fill(part->momentum().perp()*GeV,weight);
-                          _h_el_eta->fill(part->momentum().eta(),weight);
-                      }
-                  }
-              }
-              if(fabs(part->pdg_id())==13 && part->status()==1 && part->momentum().perp()*GeV >10)
-              {
-                  GenVertex *pv = part->production_vertex();
-                  for(GenVertex::particles_in_const_iterator iter = pv->particles_in_const_begin(); iter!= pv->particles_in_const_end(); ++iter)
-                  {
-                      if(abs((*iter)->pdg_id())!=5)
-                      {
-                          muons.push_back(Particle(part));
-                          _h_mu_pt->fill(part->momentum().perp()*GeV,weight);
-                          _h_mu_eta->fill(part->momentum().eta(),weight);
-                      }
-                  }
-              }
               //Select W-bosons
               if(fabs(part->pdg_id()) == 24)
               {
@@ -153,29 +124,7 @@ namespace Rivet {
           }
       }
       
-      //Electrons and muons
-      _h_el_mult->fill(ePlus.size() + eMinus.size(),weight);
-      _h_mu_mult->fill(muPlus.size() + muMinus.size(),weight);
-      std::sort(ePlus.begin(),ePlus.end(),cmpMomByPt);
-      std::sort(eMinus.begin(),eMinus.end(),cmpMomByPt);
-      std::sort(muPlus.begin(),muPlus.end(),cmpMomByPt);
-      std::sort(muMinus.begin(),muMinus.end(),cmpMomByPt);
-      if(ePlus.size() >=1 && eMinus.size() >=1)
-      {
-          _h_m_ee->fill((ePlus[0].momentum() + eMinus[0].momentum()).mass(),weight);
-          _h_e_dEta->fill(deltaEta(ePlus[0],eMinus[0]),weight);
-          _h_e_dPhi->fill(deltaPhi(ePlus[0],eMinus[0]),weight);
-          _h_e_dR->fill(deltaR(ePlus[0],eMinus[0]),weight);
-      }
-      if(muPlus.size() >=1 && muMinus.size() >=1)
-      {
-          _h_m_mumu->fill((muPlus[0].momentum() + muMinus[0].momentum()).mass(),weight);
-          _h_mu_dEta->fill(deltaEta(muPlus[0],muMinus[0]),weight);
-          _h_mu_dPhi->fill(deltaPhi(muPlus[0],muMinus[0]),weight);
-          _h_mu_dR->fill(deltaR(muPlus[0],muMinus[0]),weight);
-      }
-
-      Particles wBosons, topQuarks, bQuarks;
+      Particles wBosons, wBosonsME, topQuarks, bQuarks;
 
       foreach( const Particle& topQ, topCands)
       {
@@ -183,8 +132,9 @@ namespace Rivet {
           {
               foreach (const Particle &b, bCands)
               {
-                  GenVertex *bVert = b.genParticle()->production_vertex();
-                  GenVertex *wVert = W.genParticle()->production_vertex();
+                  GenVertex *bVert      = b.genParticle()->production_vertex();
+                  GenVertex *wVert      = W.genParticle()->production_vertex();
+                  GenVertex *wEndVert   = W.genParticle()->end_vertex();
                   for(GenVertex::particles_in_const_iterator bvIter = bVert->particles_in_const_begin(); bvIter != bVert->particles_in_const_end(); ++bvIter)
                   {
                       for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin();wvIter != wVert->particles_in_const_end(); ++wvIter)
@@ -192,13 +142,24 @@ namespace Rivet {
                           GenParticle *bParent  = (*bvIter);
                           GenParticle *wParent  = (*wvIter);
 
-
                           if(topQ.genParticle()->barcode() == bParent->barcode() && topQ.genParticle()->barcode() == wParent->barcode())
                           {
                               //You found top->b,w vertex
                               topQuarks.push_back(topQ);
                               wBosons.push_back(W);
                               bQuarks.push_back(b);
+                          }
+                          else
+                          {
+                            for(GenVertex::particles_out_const_iterator wEndIter = wEndVert->particles_out_const_begin(); wEndIter !=wEndVert->particles_out_const_end(); ++wEndIter)
+                            {
+                                GenParticle *wDaughter = (*wEndIter);
+                                int wChld_pdg = abs(wDaughter->pdg_id());
+                                if(wChld_pdg ==11 || wChld_pdg ==12 || wChld_pdg ==13 || wChld_pdg ==14)
+                                {
+                                    wBosonsME.push_back(W);
+                                }
+                            }
                           }
                       }
                   }
@@ -209,8 +170,9 @@ namespace Rivet {
       sortByPt(topQuarks);
       sortByPt(bQuarks);
       sortByPt(wBosons);
+      sortByPt(wBosonsME);
 
-      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2)
+      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1)
       {
           _h_top_dEta->fill(deltaEta(topQuarks[0],topQuarks[1]),weight);
           _h_top_dPhi->fill(deltaPhi(topQuarks[0],topQuarks[1]),weight);
@@ -247,6 +209,20 @@ namespace Rivet {
           _h_w2_pt->fill(wBosons[1].momentum().perp()*GeV,weight);
           _h_w2_eta->fill(wBosons[1].momentum().eta(),weight);
           _h_w2_phi->fill(wBosons[1].momentum().phi(),weight);
+
+
+          if(wBosonsME[0].genParticle()->pdg_id()==24)
+          {
+              _h_wPlusME_pt->fill(wBosonsME[0].momentum().perp()*GeV,weight);
+              _h_wPlusME_eta->fill(wBosonsME[0].momentum().eta(),weight);
+              _h_wPlusME_phi->fill(wBosonsME[0].momentum().phi(),weight);
+          }
+          else if (wBosonsME[0].genParticle()->pdg_id()==-24)
+          {
+              _h_wMinusME_pt->fill(wBosonsME[0].momentum().perp()*GeV,weight);
+              _h_wMinusME_eta->fill(wBosonsME[0].momentum().eta(),weight);
+              _h_wMinusME_phi->fill(wBosonsME[0].momentum().phi(),weight);
+          }
       }
 
                       
@@ -256,15 +232,6 @@ namespace Rivet {
     void finalize() 
     {
         float norm  = crossSection()/sumOfWeights();
-        scale(_h_el_pt,norm);
-        scale(_h_el_eta,norm);
-        scale(_h_mu_pt,norm);
-        scale(_h_mu_eta,norm);
-        scale(_h_el_mult,norm);
-        scale(_h_mu_mult,norm);
-        scale(_h_m_ee,norm);
-        scale(_h_m_mumu,norm);
-
         scale(_h_t1_mass,norm);
         scale(_h_t2_mass,norm);
         scale(_h_t1_pt,norm);
@@ -305,6 +272,13 @@ namespace Rivet {
         scale(_h_w_dEta,norm);
         scale(_h_w_dPhi,norm);
         scale(_h_w_dR,norm);
+
+        scale(_h_wPlusME_pt,norm);
+        scale(_h_wPlusME_eta,norm);
+        scale(_h_wPlusME_phi,norm);
+        scale(_h_wMinusME_pt,norm);
+        scale(_h_wMinusME_eta,norm);
+        scale(_h_wMinusME_phi,norm);
     }
     //@}
 
@@ -312,11 +286,6 @@ namespace Rivet {
   private:
 
     // Data members like post-cuts event weight counters go here
-    Histo1DPtr _h_el_pt, _h_el_eta;
-    Histo1DPtr _h_mu_pt, _h_mu_eta;
-    Histo1DPtr _h_el_mult,_h_mu_mult;
-    Histo1DPtr _h_m_ee,_h_m_mumu;
-
     Histo1DPtr _h_t1_mass;
     Histo1DPtr _h_t2_mass;
     Histo1DPtr _h_t1_pt;
@@ -356,6 +325,13 @@ namespace Rivet {
     Histo1DPtr _h_w_dEta;
     Histo1DPtr _h_w_dPhi;
     Histo1DPtr _h_w_dR;
+
+    Histo1DPtr _h_wPlusME_pt;
+    Histo1DPtr _h_wPlusME_eta;
+    Histo1DPtr _h_wPlusME_phi;
+    Histo1DPtr _h_wMinusME_pt;
+    Histo1DPtr _h_wMinusME_eta;
+    Histo1DPtr _h_wMinusME_phi;
 
   };
 

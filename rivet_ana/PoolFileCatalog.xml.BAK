@@ -16,4 +16,11 @@
     <logical/>
   </File>
 
+  <File ID="0C666575-FDD1-974D-A727-FA25E429902E">
+    <physical>
+      <pfn filetype="ROOT_All" name="/home/narayan/samples/ttw_sample/EVNT_7492_0.pool.root"/>
+    </physical>
+    <logical/>
+  </File>
+
 </POOLFILECATALOG>
