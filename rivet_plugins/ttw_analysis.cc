@@ -134,7 +134,6 @@ namespace Rivet {
               {
                   GenVertex *bVert      = b.genParticle()->production_vertex();
                   GenVertex *wVert      = W.genParticle()->production_vertex();
-                  GenVertex *wEndVert   = W.genParticle()->end_vertex();
                   for(GenVertex::particles_in_const_iterator bvIter = bVert->particles_in_const_begin(); bvIter != bVert->particles_in_const_end(); ++bvIter)
                   {
                       for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin();wvIter != wVert->particles_in_const_end(); ++wvIter)
@@ -149,18 +148,30 @@ namespace Rivet {
                               wBosons.push_back(W);
                               bQuarks.push_back(b);
                           }
-                          else
-                          {
-                            for(GenVertex::particles_out_const_iterator wEndIter = wEndVert->particles_out_const_begin(); wEndIter !=wEndVert->particles_out_const_end(); ++wEndIter)
-                            {
-                                GenParticle *wDaughter = (*wEndIter);
-                                int wChld_pdg = abs(wDaughter->pdg_id());
-                                if(wChld_pdg ==11 || wChld_pdg ==12 || wChld_pdg ==13 || wChld_pdg ==14)
-                                {
-                                    wBosonsME.push_back(W);
-                                }
-                            }
-                          }
+                      }
+                  }
+              }
+          }
+      }
+
+
+      foreach (const Particle &W, wCands)
+      {
+          GenVertex *wVert      = W.genParticle()->production_vertex();
+          GenVertex *wEndVert   = W.genParticle()->end_vertex();
+
+          for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin(); wvIter != wVert->particles_in_const_end(); ++wvIter)
+          {
+              GenParticle *wParent = (*wvIter);
+              if(abs(wParent->pdg_id())!=6);
+              {
+                  for(GenVertex::particles_out_const_iterator witer = wEndVert->particles_out_const_begin(); witer != wEndVert->particles_out_const_end(); ++witer)
+                  {
+                      int wchPdg =  abs((*witer)->pdg_id());
+                      if(wchPdg ==11 || wchPdg ==12 || wchPdg ==13 || wchPdg ==14) 
+                      {
+                          wBosonsME.push_back(W);
+                          break;
                       }
                   }
               }
@@ -171,6 +182,11 @@ namespace Rivet {
       sortByPt(bQuarks);
       sortByPt(wBosons);
       sortByPt(wBosonsME);
+
+      MSG_INFO("WBOSONSME Size: "<<wBosonsME.size());
+      MSG_INFO("WBOSONS Size: "<<wBosons.size());
+      MSG_INFO("bQuarks Size: "<<wBosons.size());
+      MSG_INFO("topQuarks Size: "<<topQuarks.size());
 
       if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1)
       {
