@@ -100,7 +100,6 @@ namespace Rivet {
     /// Perform the per-event analysis
     void analyze(const Event& event) {
       const double weight = event.weight();
-      MSG_INFO("#----------------Event--------------#");
 
       //DO PDG analysis
       vector<HepMC::GenParticle*> genParticles = particles(event.genEvent());
@@ -152,7 +151,6 @@ namespace Rivet {
               }
           }
       }
-      
       //Electrons and muons
       _h_el_mult->fill(ePlus.size() + eMinus.size(),weight);
       _h_mu_mult->fill(muPlus.size() + muMinus.size(),weight);
