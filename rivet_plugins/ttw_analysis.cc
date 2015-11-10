@@ -39,6 +39,15 @@ namespace Rivet {
 
     /// Book histograms and initialise projections before the run
     void init() {
+
+        addProjection(FastJets(FinalState(-4,4,0*GeV),FastJets::ANTIKT,0.4),"Jets");
+        addProjection(MissingMomentum(FinalState(-4,4,0*GeV)),"MissingET");
+
+
+        _h_wPlus_MET= bookHisto1D("wPlus_MET",100,50,450);
+        _h_wMinus_MET=bookHisto1D("wMinus_MET",100,50,450);
+        _h_wPlus_HT = bookHisto1D("wPlus_HT",100,50,1050);
+        _h_wMinus_HT= bookHisto1D("wMinus_HT",100,50,1050);
         _h_t1_mass  = bookHisto1D("t1_mass",150,130,430);
         _h_t2_mass  = bookHisto1D("t2_mass",150,130,430);
         _h_t1_pt    = bookHisto1D("t1_pt",100,50,450);
@@ -97,6 +106,16 @@ namespace Rivet {
 
     /// Perform the per-event analysis
     void analyze(const Event& event) {
+
+      const MissingMomentum &met= applyProjection<MissingMomentum>(event,"MissingET");
+      const double event_met    = met.vectorEt().mod()*GeV;
+  
+      
+      const FastJets & jetProj  = applyProjection<FastJets>(event,"Jets");
+      const Jets alljets        = jetProj.jetsByPt(20*GeV);
+      double event_ht           = 0;
+      foreach(const Jet &j, alljets){ event_ht += j.pT()*GeV;}
+
       const double weight = event.weight();
       MSG_INFO("#----------------Event--------------#");
 
@@ -126,55 +145,77 @@ namespace Rivet {
       
       Particles wBosons, wBosonsME, topQuarks, bQuarks;
 
-      foreach( const Particle& topQ, topCands)
+      foreach (const Particle &W, wCands)
       {
-          foreach (const Particle &W, wCands)
+          bool topToBWFound = false;
+          foreach (const Particle &b, bCands)
           {
-              foreach (const Particle &b, bCands)
+              GenVertex *bVert      = b.genParticle()->production_vertex();
+              GenVertex *wVert      = W.genParticle()->production_vertex();
+              for(GenVertex::particles_in_const_iterator bvIter = bVert->particles_in_const_begin(); bvIter != bVert->particles_in_const_end(); ++bvIter)
               {
-                  GenVertex *bVert      = b.genParticle()->production_vertex();
-                  GenVertex *wVert      = W.genParticle()->production_vertex();
-                  for(GenVertex::particles_in_const_iterator bvIter = bVert->particles_in_const_begin(); bvIter != bVert->particles_in_const_end(); ++bvIter)
+                  for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin();wvIter != wVert->particles_in_const_end(); ++wvIter)
                   {
-                      for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin();wvIter != wVert->particles_in_const_end(); ++wvIter)
-                      {
-                          GenParticle *bParent  = (*bvIter);
-                          GenParticle *wParent  = (*wvIter);
+                      GenParticle *bParent  = (*bvIter);
+                      GenParticle *wParent  = (*wvIter);
 
+                      foreach (const Particle &topQ, topCands)
+                      {
                           if(topQ.genParticle()->barcode() == bParent->barcode() && topQ.genParticle()->barcode() == wParent->barcode())
                           {
+                              topToBWFound = true;
                               //You found top->b,w vertex
                               topQuarks.push_back(topQ);
-                              wBosons.push_back(W);
                               bQuarks.push_back(b);
                           }
                       }
                   }
               }
           }
+          if(topToBWFound)
+          {
+              wBosons.push_back(W);
+          }
       }
 
 
       foreach (const Particle &W, wCands)
       {
+          bool wlepDecay = false;
+          bool noTopParent = false;
           GenVertex *wVert      = W.genParticle()->production_vertex();
           GenVertex *wEndVert   = W.genParticle()->end_vertex();
 
-          for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin(); wvIter != wVert->particles_in_const_end(); ++wvIter)
+          foreach (const Particle &topW, wBosons)
+          {
+              if(topW.genParticle() != W.genParticle())
+              {
+                  noTopParent = true;
+              }
+          }
+
+          /*for(GenVertex::particles_in_const_iterator wvIter = wVert->particles_in_const_begin(); wvIter != wVert->particles_in_const_end(); ++wvIter)
           {
               GenParticle *wParent = (*wvIter);
-              if(abs(wParent->pdg_id())!=6);
+              if(abs(wParent->pdg_id())!=6 || abs(wParent->pdg_id())!= 24);
               {
-                  for(GenVertex::particles_out_const_iterator witer = wEndVert->particles_out_const_begin(); witer != wEndVert->particles_out_const_end(); ++witer)
-                  {
-                      int wchPdg =  abs((*witer)->pdg_id());
-                      if(wchPdg ==11 || wchPdg ==12 || wchPdg ==13 || wchPdg ==14) 
-                      {
-                          wBosonsME.push_back(W);
-                          break;
-                      }
-                  }
+                  noTopParent = true;
+                  break;
               }
+          }*/
+          
+          for(GenVertex::particles_out_const_iterator witer = wEndVert->particles_out_const_begin(); witer != wEndVert->particles_out_const_end(); ++witer)
+          {
+              int wchPdg =  abs((*witer)->pdg_id());
+              if(wchPdg ==11 || wchPdg ==12 || wchPdg ==13 || wchPdg ==14) 
+              {
+                  wlepDecay = true;
+                  break;
+              }
+          }
+          if(wlepDecay && noTopParent)
+          {
+              wBosonsME.push_back(W);
           }
       }
 
@@ -183,17 +224,21 @@ namespace Rivet {
       sortByPt(wBosons);
       sortByPt(wBosonsME);
 
-      MSG_INFO("WBOSONSME Size: "<<wBosonsME.size());
-      MSG_INFO("WBOSONS Size: "<<wBosons.size());
-      MSG_INFO("bQuarks Size: "<<wBosons.size());
-      MSG_INFO("topQuarks Size: "<<topQuarks.size());
+      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1)
+      {
+          MSG_INFO("WCANDS size: "<< wCands.size());
+          MSG_INFO("WBOSONSME Size: "<<wBosonsME.size());
+          MSG_INFO("WBOSONS Size: "<<wBosons.size());
+          MSG_INFO("bQuarks Size: "<<wBosons.size());
+          MSG_INFO("topQuarks Size: "<<topQuarks.size());
+      }
 
       if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1)
       {
           _h_top_dEta->fill(deltaEta(topQuarks[0],topQuarks[1]),weight);
           _h_top_dPhi->fill(deltaPhi(topQuarks[0],topQuarks[1]),weight);
           _h_top_dR->fill(deltaR(topQuarks[0],topQuarks[1]),weight);
-     
+        
           _h_t1_mass->fill(topQuarks[0].momentum().mass()*GeV,weight);
           _h_t1_pt->fill(topQuarks[0].momentum().perp()*GeV,weight);
           _h_t1_eta->fill(topQuarks[0].momentum().eta(),weight);
@@ -232,22 +277,28 @@ namespace Rivet {
               _h_wPlusME_pt->fill(wBosonsME[0].momentum().perp()*GeV,weight);
               _h_wPlusME_eta->fill(wBosonsME[0].momentum().eta(),weight);
               _h_wPlusME_phi->fill(wBosonsME[0].momentum().phi(),weight);
+              _h_wPlus_MET->fill(event_met,weight);
+              _h_wPlus_HT->fill(event_ht,weight);
           }
           else if (wBosonsME[0].genParticle()->pdg_id()==-24)
           {
               _h_wMinusME_pt->fill(wBosonsME[0].momentum().perp()*GeV,weight);
               _h_wMinusME_eta->fill(wBosonsME[0].momentum().eta(),weight);
               _h_wMinusME_phi->fill(wBosonsME[0].momentum().phi(),weight);
+              _h_wMinus_MET->fill(event_met,weight);
+              _h_wMinus_MET->fill(event_ht,weight);
           }
       }
-
-                      
     }
      
     /// Normalise histograms etc., after the run
     void finalize() 
     {
         float norm  = crossSection()/sumOfWeights();
+        scale(_h_wPlus_MET,norm);
+        scale(_h_wMinus_MET,norm);
+        scale(_h_wPlus_HT,norm);
+        scale(_h_wMinus_HT,norm);
         scale(_h_t1_mass,norm);
         scale(_h_t2_mass,norm);
         scale(_h_t1_pt,norm);
@@ -302,6 +353,8 @@ namespace Rivet {
   private:
 
     // Data members like post-cuts event weight counters go here
+    Histo1DPtr _h_wPlus_MET,_h_wMinus_MET;
+    Histo1DPtr _h_wPlus_HT,_h_wMinus_HT;
     Histo1DPtr _h_t1_mass;
     Histo1DPtr _h_t2_mass;
     Histo1DPtr _h_t1_pt;

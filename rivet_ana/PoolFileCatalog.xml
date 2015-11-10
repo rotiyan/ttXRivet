@@ -23,4 +23,11 @@
     <logical/>
   </File>
 
+  <File ID="550FF35A-BDE4-B646-95E4-51F9B8F64D4F">
+    <physical>
+      <pfn filetype="ROOT_All" name="/home/narayan/samples/mc15_valid.410073.MadGraphPythia8EvtGen_A14NNPDF23LO_ttZnnqq_Np0.evgen.EVNT.e4493_tid06645850_00/EVNT.06645850._000197.pool.root.1"/>
+    </physical>
+    <logical/>
+  </File>
+
 </POOLFILECATALOG>
