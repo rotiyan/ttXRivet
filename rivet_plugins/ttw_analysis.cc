@@ -286,7 +286,7 @@ namespace Rivet {
               _h_wMinusME_eta->fill(wBosonsME[0].momentum().eta(),weight);
               _h_wMinusME_phi->fill(wBosonsME[0].momentum().phi(),weight);
               _h_wMinus_MET->fill(event_met,weight);
-              _h_wMinus_MET->fill(event_ht,weight);
+              _h_wMinus_HT->fill(event_ht,weight);
           }
       }
     }
