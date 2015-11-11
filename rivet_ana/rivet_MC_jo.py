@@ -1,8 +1,8 @@
 from glob import glob
 
 
-#theApp.EvtMax = -1
-theApp.EvtMax=500
+theApp.EvtMax = -1
+#theApp.EvtMax=500
 
 import AthenaPoolCnvSvc.ReadAthenaPool
 #svcMgr.EventSelector.InputCollections = glob("~/samples/user.mcfayden.evnt.2015-05-07_025309.200001.8TeV_ttZlloff_EXT1/*.root*")
