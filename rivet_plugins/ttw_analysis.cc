@@ -40,7 +40,7 @@ namespace Rivet {
     /// Book histograms and initialise projections before the run
     void init() {
 
-        addProjection(FastJets(FinalState(-4,4,0*GeV),FastJets::ANTIKT,0.4),"Jets");
+        addProjection(FastJets(FinalState(-4.2,4.2,0*GeV),FastJets::ANTIKT,0.4),"Jets");
         addProjection(MissingMomentum(FinalState(-4,4,0*GeV)),"MissingET");
 
 
@@ -48,6 +48,8 @@ namespace Rivet {
         _h_wMinus_MET=bookHisto1D("wMinus_MET",100,50,450);
         _h_wPlus_HT = bookHisto1D("wPlus_HT",100,50,1050);
         _h_wMinus_HT= bookHisto1D("wMinus_HT",100,50,1050);
+        _h_wPlus_nJets = bookHisto1D("wPlus_nJets",11,-0.5,10.5);
+        _h_wMinus_nJets= bookHisto1D("wMinus_nJets",11,-0.5,10.5);
         _h_t1_mass  = bookHisto1D("t1_mass",150,130,430);
         _h_t2_mass  = bookHisto1D("t2_mass",150,130,430);
         _h_t1_pt    = bookHisto1D("t1_pt",100,50,450);
@@ -277,6 +279,8 @@ namespace Rivet {
               _h_wPlusME_pt->fill(wBosonsME[0].momentum().perp()*GeV,weight);
               _h_wPlusME_eta->fill(wBosonsME[0].momentum().eta(),weight);
               _h_wPlusME_phi->fill(wBosonsME[0].momentum().phi(),weight);
+
+              _h_wPlus_nJets->fill(alljets.size(),weight);
               _h_wPlus_MET->fill(event_met,weight);
               _h_wPlus_HT->fill(event_ht,weight);
           }
@@ -285,6 +289,8 @@ namespace Rivet {
               _h_wMinusME_pt->fill(wBosonsME[0].momentum().perp()*GeV,weight);
               _h_wMinusME_eta->fill(wBosonsME[0].momentum().eta(),weight);
               _h_wMinusME_phi->fill(wBosonsME[0].momentum().phi(),weight);
+
+              _h_wMinus_nJets->fill(alljets.size(),weight);
               _h_wMinus_MET->fill(event_met,weight);
               _h_wMinus_HT->fill(event_ht,weight);
           }
@@ -299,6 +305,8 @@ namespace Rivet {
         scale(_h_wMinus_MET,norm);
         scale(_h_wPlus_HT,norm);
         scale(_h_wMinus_HT,norm);
+        scale(_h_wPlus_nJets,norm);
+        scale(_h_wMinus_nJets,norm);
         scale(_h_t1_mass,norm);
         scale(_h_t2_mass,norm);
         scale(_h_t1_pt,norm);
@@ -355,6 +363,7 @@ namespace Rivet {
     // Data members like post-cuts event weight counters go here
     Histo1DPtr _h_wPlus_MET,_h_wMinus_MET;
     Histo1DPtr _h_wPlus_HT,_h_wMinus_HT;
+    Histo1DPtr _h_wPlus_nJets,_h_wMinus_nJets;
     Histo1DPtr _h_t1_mass;
     Histo1DPtr _h_t2_mass;
     Histo1DPtr _h_t1_pt;
