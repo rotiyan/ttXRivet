@@ -59,6 +59,7 @@ namespace Rivet {
       // Set up ROOT file structure
       _treeFile = new TFile(_treeFileName, "recreate");
       _rivetTree= new TTree("Rivet Tree", "Rivet Example Tree");
+
       _rivetTree->Branch("nevt", &_nevt, "nevt/I");
       _rivetTree->Branch("weight",&_weight,"weight/F");
 
@@ -84,6 +85,10 @@ namespace Rivet {
       _rivetTree->Branch("nnevent",&_nnevent,"nnevent/I");
       _rivetTree->Branch("qqevent",&_qqevent,"qqevent/I");
       _rivetTree->Branch("zmass",&_zmass,"zmass/F");
+
+      _metaTree = new TTree("Meta data "," Meta data tree");
+      _metaTree->Branch("crossSection",&_crosssection,"crossSection/F");
+      _metaTree->Branch("sumWeights",&_sumWeights,"sumWeights/F");
     }
     
 
@@ -184,6 +189,11 @@ namespace Rivet {
     void finalize() { 
       // Write the tree to file.
       _rivetTree->Write();
+
+      _crosssection = crossSection();
+      _sumWeights   = sumOfWeights();
+      _metaTree->Fill();
+      _metaTree->Write();
     }
     
     //@}
@@ -193,6 +203,7 @@ namespace Rivet {
 
     /// The tree
     TTree* _rivetTree;
+    TTree* _metaTree;
     
     /// The file for the Tree
     TFile* _treeFile;
@@ -219,6 +230,9 @@ namespace Rivet {
     std::vector<float>* _jet_phi;
     std::vector<float>* _jet_m;
     std::vector<float>* _jet_e;
+
+    float _crosssection;
+    float _sumWeights;
 
   };
   // This global object acts as a hook for the plugin system
