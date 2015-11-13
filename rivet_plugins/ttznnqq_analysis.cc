@@ -63,16 +63,16 @@ namespace Rivet {
       _rivetTree->Branch("weight",&_weight,"weight/F");
 
       _jet_pt   = new std::vector<float>();
-      _rivetTree->Branch("jet_pt",&_jet_pt,"jet_pt");
+      _rivetTree->Branch("jet_pt","vector<float>",&_jet_pt);
       
       _jet_eta  = new std::vector<float>();
-      _rivetTree->Branch("jet_eta",&_jet_eta,"jet_eta");
+      _rivetTree->Branch("jet_eta","vector<float>",&_jet_eta);
 
       _jet_phi  = new std::vector<float>();
-      _rivetTree->Branch("jet_phi",&_jet_phi,"jet_phi");
+      _rivetTree->Branch("jet_phi","vector<float>",&_jet_phi);
 
       _jet_m    = new std::vector<float>();
-      _rivetTree->Branch("jet_m",&_jet_m,"jet_m");
+      _rivetTree->Branch("jet_m","vector<float>",&_jet_m);
 
       _jet_e    = new std::vector<float>();
       
@@ -81,6 +81,8 @@ namespace Rivet {
       //met
       _rivetTree->Branch("met",&_met,"met/F");
       _rivetTree->Branch("ht",&_ht,"ht/F");
+      _rivetTree->Branch("nnevent",&_nnevent,"nnevent/I");
+      _rivetTree->Branch("qqevent",&_qqevent,"qqevent/I");
       _rivetTree->Branch("zmass",&_zmass,"zmass/F");
     }
     
@@ -104,7 +106,7 @@ namespace Rivet {
     //Start event
 
       bool hadronicZevent   = false;
-      bool neurinoZevent    = false;
+      bool neutrinoZevent   = false;
 
       _weight = event.weight();
 
@@ -120,17 +122,18 @@ namespace Rivet {
         MSG_INFO("Event failed missing ET cut: MET = "<<_met);
         vetoEvent;
       }
- 
+
       const FastJets& jetpro = applyProjection<FastJets>(event, "Jets");
       const Jets alljets = jetpro.jetsByPt(20*GeV);
  
       double ht = 0.0;
       foreach (const Jet& j, alljets) { ht += j.pT(); }
+      MSG_INFO("HT : "<<ht);
 
       const ZFinder & znunuFinder   = applyProjection<ZFinder>(event,"znunuFinder");
       if(znunuFinder.size() !=0)
       {
-          neurinoZevent = true;
+          neutrinoZevent= true;
           _zmass = znunuFinder.bosons()[0].momentum().mass()/GeV;
           _nnevent = 1;
       }
@@ -143,10 +146,11 @@ namespace Rivet {
       float PDG_zmass      = 91.1876*GeV;
       foreach(const Jet &j1, alljets)
       {
-          _jet_pt->push_back(j1.pT());
+          MSG_INFO("jet pt : "<<j1.pT()/GeV);
+          _jet_pt->push_back(j1.pT()/GeV);
           _jet_eta->push_back(j1.eta());
           _jet_phi->push_back(j1.phi());
-          _jet_m->push_back(j1.mass());
+          _jet_m->push_back(j1.mass()/GeV);
 
           foreach(const Jet &j2,alljets)
           {
@@ -170,7 +174,7 @@ namespace Rivet {
           _qqevent = 1;
       }
 
-      if(_nnevent || _qqevent)
+      if(neutrinoZevent|| hadronicZevent)
       {
           _rivetTree->Fill();
       }
