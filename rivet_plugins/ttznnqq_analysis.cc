@@ -2,10 +2,10 @@
 #include "Rivet/Analysis.hh"
 #include "Rivet/Tools/Logging.hh"
 #include "Rivet/Projections/ChargedLeptons.hh"
-//#include "Rivet/Projections/TotalVisibleMomentum.hh"
 #include "Rivet/Projections/FastJets.hh"
 #include "Rivet/Projections/ZFinder.hh"
 #include "Rivet/Projections/MissingMomentum.hh"
+#include "Rivet/Projections/HeavyHadrons.hh"
 
 
 // ROOT stuff
@@ -46,6 +46,12 @@ namespace Rivet {
       ZFinder znunuFinder(zfs,zeefscut,PID::NU_E,60.*GeV,120.0*GeV,0.2,ZFinder::CLUSTERNODECAY,ZFinder::NOTRACK);
       addProjection(znunuFinder,"znunuFinder");
 
+      addProjection(HeavyHadrons(Cuts::abseta < 5 && Cuts::pT > 5*GeV), "BCHadrons");
+ 
+      ChargedLeptons lfs(FinalState(-4.0,4.0,10*GeV));
+      addProjection(lfs,"LFS");
+
+
       /// Veto neutrinos, antineutrinos and LSP
       //VetoedFinalState vfs(fs);
       //vfs
@@ -75,6 +81,9 @@ namespace Rivet {
       _jet_m    = new std::vector<float>();
       _rivetTree->Branch("jet_m","vector<float>",&_jet_m);
 
+      _jet_flav = new std::vector<float>();
+      _rivetTree->Branch("jet_flav","vector<float>",&_jet_flav);
+
       _jet_e    = new std::vector<float>();
       
       // Jets      
@@ -85,6 +94,7 @@ namespace Rivet {
       _rivetTree->Branch("nnevent",&_nnevent,"nnevent/I");
       _rivetTree->Branch("qqevent",&_qqevent,"qqevent/I");
       _rivetTree->Branch("zmass",&_zmass,"zmass/F");
+      _rivetTree->Branch("tmass",&_tmass,"tmass/F");
 
       _metaTree = new TTree("Meta data "," Meta data tree");
       _metaTree->Branch("crossSection",&_crosssection,"crossSection/F");
@@ -96,17 +106,21 @@ namespace Rivet {
     void analyze(const Event& event) {
       //Reset the variables
     _nevt       = 0;
-    _met        = 0;
     _weight     = 0;
+    _njet       = 0; 
+    _met        = 0;
+    _ht         = 0;
     _nnevent    = 0;
     _qqevent    = 0;
-    _njet       = 0; 
-    
+    _zmass      = 0;
+    _tmass      = 0;
+   
     /// Four momentum of the jets
     _jet_pt->resize(0);
     _jet_eta->resize(0);
     _jet_phi->resize(0);
     _jet_m->resize(0);
+    _jet_flav->resize(0);
 
     //Start event
 
@@ -128,6 +142,8 @@ namespace Rivet {
         vetoEvent;
       }
 
+      const Particles bhadrons = sortByPt(applyProjection<HeavyHadrons>(event, "BCHadrons").bHadrons());
+
       const FastJets& jetpro = applyProjection<FastJets>(event, "Jets");
       const Jets alljets = jetpro.jetsByPt(20*GeV);
  
@@ -136,48 +152,150 @@ namespace Rivet {
       MSG_INFO("HT : "<<ht);
 
       const ZFinder & znunuFinder   = applyProjection<ZFinder>(event,"znunuFinder");
+      const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
+ 
       if(znunuFinder.size() !=0)
       {
           neutrinoZevent= true;
           _zmass = znunuFinder.bosons()[0].momentum().mass()/GeV;
           _nnevent = 1;
       }
-    
-      foreach (const Jet &j,alljets){_ht += j.pT()/GeV;}
+      
       _njet = alljets.size();
-    
-      Jet zjet1,zjet2; //Z->qq jets
-      float deltaZMass = 30;
-      float PDG_zmass      = 91.1876*GeV;
-      foreach(const Jet &j1, alljets)
+      if((_njet < 6 && !neutrinoZevent) || (_njet<4 && neutrinoZevent))
       {
-          MSG_INFO("jet pt : "<<j1.pT()/GeV);
-          _jet_pt->push_back(j1.pT()/GeV);
-          _jet_eta->push_back(j1.eta());
-          _jet_phi->push_back(j1.phi());
-          _jet_m->push_back(j1.mass()/GeV);
-
-          foreach(const Jet &j2,alljets)
+          vetoEvent;
+      }
+ 
+      //Find b-jets
+      Jets bjets,ljets;
+      foreach (const Jet& jet, alljets) 
+      {
+          foreach (const Particle& b, bhadrons) 
           {
-              if(j1.momentum() != j2.momentum())
+              if (deltaR(jet,b) < 0.3)
               {
-                  FourMomentum cmbMom = (j1.momentum() + j2.momentum());
-                  if(abs(cmbMom.mass() - PDG_zmass) < deltaZMass)
+    	          bjets.push_back(jet);
+              }
+              else
+              {
+                  ljets.push_back(jet);
+              }
+          }
+      }
+      if(bjets.size() <2 )
+      {
+          vetoEvent;
+      }
+
+      //Fill jet variables
+      foreach (const Jet &j,alljets)
+      {
+          _ht += j.pT()/GeV;
+          MSG_INFO("jet pt : "<<j.pT()/GeV);
+          _jet_pt->push_back(j.pT()/GeV);
+          _jet_eta->push_back(j.eta());
+          _jet_phi->push_back(j.phi());
+          _jet_m->push_back(j.mass()/GeV);
+
+          bool isBjet =false;
+          foreach(const Particle &b, bhadrons)
+          {
+              if(deltaR(j,b) <0.3)
+              {
+                  isBjet =true;
+              }
+          }
+          _jet_flav->push_back((isBjet)?1:0);
+      }
+
+    
+      Jets remainJets;
+      if(neutrinoZevent)
+      {
+          remainJets = ljets;
+      }
+      else
+      {
+          Jet zjet1,zjet2; //Z->qq jets
+          float deltaZMass = 30;
+          float PDG_zmass      = 91.1876*GeV;
+          foreach(const Jet &j1, ljets)
+          {
+              foreach(const Jet &j2,ljets)
+              {
+                  if(j1.momentum() != j2.momentum())
                   {
-                      zjet1 = j1;
-                      zjet2  = j2;
-                      deltaZMass = abs(cmbMom.mass() -PDG_zmass);
+                      FourMomentum cmbMom = (j1.momentum() + j2.momentum());
+                      if(abs(cmbMom.mass() - PDG_zmass) < deltaZMass)
+                      {
+                          zjet1 = j1;
+                          zjet2  = j2;
+                          deltaZMass = abs(cmbMom.mass() -PDG_zmass);
+                      }
+                  }
+              }
+          }
+          float Zmass = (zjet1.momentum() + zjet2.momentum()).mass()/GeV;
+          if(Zmass > 60 && Zmass < 120)
+          {
+              hadronicZevent= true;
+              _zmass = Zmass;
+              _qqevent = 1;
+              foreach (const Jet &myjet, ljets)
+              {
+                  if(myjet.pT() !=zjet1.pT() || myjet.pT() != zjet2.pT())
+                  {
+                      remainJets.push_back(myjet);
                   }
               }
           }
       }
-      float Zmass = (zjet1.momentum() + zjet2.momentum()).mass()/GeV;
-      if(Zmass > 60 && Zmass < 120)
+
+      //Construct tops with the remain jets;
+      //
+ 
+      // Construct the hadronically decaying W momentum 4-vector from pairs of
+      // non-b-tagged jets. The pair which best matches the W mass is used. We start
+      // with an always terrible 4-vector estimate which should always be "beaten" by
+      // a real jet pair.
+      FourMomentum W(10*sqrtS(), 0, 0, 0);
+      for (size_t i = 0; i < remainJets.size()-1; ++i) 
       {
-          hadronicZevent= true;
-          _zmass = Zmass;
-          _qqevent = 1;
+          for (size_t j = i + 1; j < remainJets.size(); ++j) 
+          {
+              const FourMomentum Wcand = remainJets[i].momentum() + remainJets[j].momentum();
+              MSG_TRACE(i << "," << j << ": candidate W mass = " << Wcand.mass()/GeV
+                    << " GeV, vs. incumbent candidate with " << W.mass()/GeV << " GeV");
+              if (fabs(Wcand.mass() - 80.4*GeV) < fabs(W.mass() - 80.4*GeV)) 
+              {
+                  W = Wcand;
+              }
+          }
       }
+      MSG_INFO("Candidate W mass = " << W.mass() << " GeV");
+
+      // There are two b-jets with which this can be combined to make the
+      // hadronically decaying top, one of which is correct and the other is
+      // not... but we have no way to identify which is which, so we construct
+      // both possible top momenta and fill the histograms with both.
+      const FourMomentum t1 = W + bjets[0].momentum();
+      const FourMomentum t2 = W + bjets[1].momentum();
+
+      const float target_topMass = 173.21*GeV;
+
+      FourMomentum t_had(10*sqrtS(),0.0,0.0,0.0);
+      if(fabs(target_topMass - t1.mass()) < fabs(target_topMass - t2.mass()))
+      {
+          t_had = t1;
+      }
+      else
+      {
+        t_had = t2;
+      }
+      _tmass = t_had.mass()/GeV;
+
+
 
       if(neutrinoZevent|| hadronicZevent)
       {
@@ -219,6 +337,7 @@ namespace Rivet {
     float _met;
     float _ht;
     float _zmass;
+    float _tmass;
     float _weight;
     int _nnevent;
     int _qqevent;
@@ -229,6 +348,7 @@ namespace Rivet {
     std::vector<float>* _jet_eta;
     std::vector<float>* _jet_phi;
     std::vector<float>* _jet_m;
+    std::vector<float>* _jet_flav;
     std::vector<float>* _jet_e;
 
     float _crosssection;
