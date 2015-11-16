@@ -135,22 +135,11 @@ namespace Rivet {
 
       const MissingMomentum& met = applyProjection<MissingMomentum>(event, "MissingET");
       _met  = met.vectorEt().mod()/GeV;
-      
-      if (met.vectorEt().mod() < 30*GeV )
-      {
-        MSG_INFO("Event failed missing ET cut: MET = "<<_met);
-        vetoEvent;
-      }
 
       const Particles bhadrons = sortByPt(applyProjection<HeavyHadrons>(event, "BCHadrons").bHadrons());
-
       const FastJets& jetpro = applyProjection<FastJets>(event, "Jets");
       const Jets alljets = jetpro.jetsByPt(20*GeV);
  
-      double ht = 0.0;
-      foreach (const Jet& j, alljets) { ht += j.pT(); }
-      MSG_INFO("HT : "<<ht);
-
       const ZFinder & znunuFinder   = applyProjection<ZFinder>(event,"znunuFinder");
       const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
  
@@ -160,7 +149,22 @@ namespace Rivet {
           _zmass = znunuFinder.bosons()[0].momentum().mass()/GeV;
           _nnevent = 1;
       }
-      
+ 
+      if(neutrinoZevent)
+      {
+          if(met.vectorEt().mod() < 60*GeV)
+          {
+              MSG_INFO("Event failed missing ET cut: MET = "<<_met);
+              vetoEvent;
+          }
+      }
+      else if(met.vectorEt().mod() <30*GeV)
+      {
+          MSG_INFO("Event failed missing ET cut: MET="<<_met);
+          vetoEvent;
+      }
+
+     
       _njet = alljets.size();
       if((_njet < 6 && !neutrinoZevent) || (_njet<4 && neutrinoZevent))
       {
