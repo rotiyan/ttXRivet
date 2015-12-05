@@ -46,16 +46,16 @@ namespace Rivet {
       addProjection(lfs,"LFS");
 
 
-     _h_nn_met      =   bookHisto1D("nn_met",200,0,800);
+     _h_nn_met      =   bookHisto1D("nn_met",100,0,800);
      _h_nn_ht       =   bookHisto1D("nn_ht",100,0,900);
-     _h_qq_met      =   bookHisto1D("qq_met",200,0,800);
+     _h_qq_met      =   bookHisto1D("qq_met",100,0,800);
      _h_qq_ht       =   bookHisto1D("qq_ht",100,0,900);
-     _h_nn_njet     =   bookHisto1D("nn_njet",11,-0.5,9.5);
+     _h_nn_njet     =   bookHisto1D("nn_njet",20,-0.5,19.5);
      _h_nn_jet_1_pt =   bookHisto1D("nn_jet_1_pt",100,10,410);
      _h_nn_bjet1_pt =   bookHisto1D("nn_bjet1_pt",100,10,410);
      _h_nn_jet_2_pt =   bookHisto1D("nn_jet_2_pt",100,10,410);
      _h_nn_bjet2_pt =   bookHisto1D("nn_bjet2_pt",100,10,410);
-     _h_qq_njet     =   bookHisto1D("qq_njet",11,-0.5,9.5);
+     _h_qq_njet     =   bookHisto1D("qq_njet",20,-0.5,19.5);
      _h_qq_jet_1_pt =   bookHisto1D("qq_jet_1_pt",100,20,410);
      _h_qq_bjet1_pt =   bookHisto1D("qq_bjet1_pt",100,20,410);
      _h_qq_jet_2_pt =   bookHisto1D("qq_jet_2_pt",100,20,410);
