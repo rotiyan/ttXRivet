@@ -269,6 +269,30 @@ namespace Rivet {
     
     void finalize() { 
       // Write the tree to file.
+        
+        double norm = crossSection()/sumOfWeights();
+
+        scale(_h_nn_met,norm);
+        scale(_h_nn_ht,norm);
+        scale(_h_nn_njet,norm);
+        scale(_h_nn_jet_1_pt,norm);
+        scale(_h_nn_jet_2_pt,norm);
+        scale(_h_nn_bjet1_pt,norm);
+        scale(_h_nn_bjet2_pt,norm);
+        scale(_h_nn_zmass,norm);
+        scale(_h_nn_t_mass,norm);
+ 
+        scale(_h_qq_met,norm);
+        scale(_h_qq_ht,norm);
+        scale(_h_qq_njet,norm);
+        scale(_h_qq_jet_1_pt,norm);
+        scale(_h_qq_jet_2_pt,norm);
+        scale(_h_qq_bjet1_pt,norm);
+        scale(_h_qq_bjet2_pt,norm);
+        scale(_h_qq_zmass,norm);
+        scale(_h_qq_t_mass,norm);
+
+
     }
     
     //@}
