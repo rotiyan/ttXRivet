@@ -24,10 +24,10 @@ namespace Rivet {
   /// are not recommended in Rivet analyses, since the information is 
   /// unphysical and so cannot be compared to data, and also may be generator dependent.
   /// 
-  class RootAnalysis : public Analysis {
+  class ttznnqq_analysis: public Analysis{
   public:
 
-    RootAnalysis() : Analysis("ROOTANALYSIS") { 
+    ttznnqq_analysis() : Analysis("ROOTANALYSIS") { 
       // Choose cuts
       _treeFileName = "rivetTree.root";
     }
@@ -95,10 +95,6 @@ namespace Rivet {
       _rivetTree->Branch("qqevent",&_qqevent,"qqevent/I");
       _rivetTree->Branch("zmass",&_zmass,"zmass/F");
       _rivetTree->Branch("tmass",&_tmass,"tmass/F");
-
-      _metaTree = new TTree("Meta data "," Meta data tree");
-      _metaTree->Branch("crossSection",&_crosssection,"crossSection/F");
-      _metaTree->Branch("sumWeights",&_sumWeights,"sumWeights/F");
     }
     
 
@@ -128,7 +124,6 @@ namespace Rivet {
       bool neutrinoZevent   = false;
 
       _weight = event.weight();
-
 
       const GenEvent& ev = *(event.genEvent());
       _nevt = ev.event_number();
@@ -310,12 +305,8 @@ namespace Rivet {
     
     void finalize() { 
       // Write the tree to file.
-      _rivetTree->Write();
+     _rivetTree->Write();
 
-      _crosssection = crossSection();
-      _sumWeights   = sumOfWeights();
-      _metaTree->Fill();
-      _metaTree->Write();
     }
     
     //@}
@@ -325,7 +316,6 @@ namespace Rivet {
 
     /// The tree
     TTree* _rivetTree;
-    TTree* _metaTree;
     
     /// The file for the Tree
     TFile* _treeFile;
@@ -355,10 +345,8 @@ namespace Rivet {
     std::vector<float>* _jet_flav;
     std::vector<float>* _jet_e;
 
-    float _crosssection;
-    float _sumWeights;
-
   };
   // This global object acts as a hook for the plugin system
-  AnalysisBuilder<RootAnalysis> plugin_RootAnalysis;
+  // AnalysisBuilder<ttznnqq_analysis> plugin_ttznnqq_analysis;
+  DECLARE_RIVET_PLUGIN(ttznnqq_analysis);
 }
