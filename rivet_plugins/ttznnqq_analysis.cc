@@ -30,7 +30,7 @@ namespace Rivet {
 
     ttznnqq_analysis() : Analysis("ttznnqq_analysis") { 
       // Choose cuts
-      _treeFileName = "rivetTree.root";
+      _treeFileName = "rivet.root";
     }
     
     
@@ -65,7 +65,7 @@ namespace Rivet {
       
       // Set up ROOT file structure
       _treeFile = new TFile(_treeFileName, "recreate");
-      _rivetTree= new TTree("Rivet Tree", "Rivet Example Tree");
+      _rivetTree= new TTree("rivetTree", "Rivet Example Tree");
 
       _rivetTree->Branch("nevt", &_nevt, "nevt/I");
       _rivetTree->Branch("weight",&_weight,"weight/F");
