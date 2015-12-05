@@ -9,10 +9,6 @@
 
 
 // ROOT stuff
-#include "TTree.h"
-#include "TFile.h"
-#include "TString.h"
-
 #include <vector>
 
 
@@ -27,10 +23,7 @@ namespace Rivet {
   /// 
   class ttznnqq_analysis: public Analysis{
   public:
-
     ttznnqq_analysis() : Analysis("ttznnqq_analysis") { 
-      // Choose cuts
-      _treeFileName = "rivet.root";
     }
     
     
@@ -53,72 +46,39 @@ namespace Rivet {
       addProjection(lfs,"LFS");
 
 
-      /// Veto neutrinos, antineutrinos and LSP
-      //VetoedFinalState vfs(fs);
-      //vfs
-      //  .addVetoDetail(NU_E, 10.0*GeV, 50.0*GeV)
-      //  .addVetoPairId(NU_MU)
-       // .addVetoPairId(NU_TAU)
-       // .addVetoId(1000022); // Assumes that neutralino_1 is the LSP
-      //addProjection(vfs, "VFS");
-      //addProjection(TotalVisibleMomentum(vfs), "TotalVisMom");
-      
-      // Set up ROOT file structure
-      _treeFile = new TFile(_treeFileName, "recreate");
-      _rivetTree= new TTree("rivetTree", "Rivet Example Tree");
+     _h_nn_met      =   bookHisto1D("nn_met",200,0,800);
+     _h_nn_ht       =   bookHisto1D("nn_ht",100,0,900);
+     _h_qq_met      =   bookHisto1D("qq_met",200,0,800);
+     _h_qq_ht       =   bookHisto1D("qq_ht",100,0,900);
+     _h_nn_njet     =   bookHisto1D("nn_njet",11,-0.5,9.5);
+     _h_nn_jet_1_pt =   bookHisto1D("nn_jet_1_pt",100,10,410);
+     _h_nn_bjet1_pt =   bookHisto1D("nn_bjet1_pt",100,10,410);
+     _h_nn_jet_2_pt =   bookHisto1D("nn_jet_2_pt",100,10,410);
+     _h_nn_bjet2_pt =   bookHisto1D("nn_bjet2_pt",100,10,410);
+     _h_qq_njet     =   bookHisto1D("qq_njet",11,-0.5,9.5);
+     _h_qq_jet_1_pt =   bookHisto1D("qq_jet_1_pt",100,20,410);
+     _h_qq_bjet1_pt =   bookHisto1D("qq_bjet1_pt",100,20,410);
+     _h_qq_jet_2_pt =   bookHisto1D("qq_jet_2_pt",100,20,410);
+     _h_qq_bjet2_pt =   bookHisto1D("qq_bjet2_pt",100,20,410);
+     _h_nn_zmass    =   bookHisto1D("nn_zmass",210,5,115);
+     _h_nn_t_mass   =   bookHisto1D("nn_t_mass",150,130,430);
+     _h_qq_zmass    =   bookHisto1D("qq_zmass",210,5,115);
+     _h_qq_t_mass   =   bookHisto1D("qq_t_mass",150,130,430);
 
-      _rivetTree->Branch("nevt", &_nevt, "nevt/I");
-      _rivetTree->Branch("weight",&_weight,"weight/F");
-
-      _rivetTree->Branch("jet_pt",&_jet_pt);
-      _rivetTree->Branch("jet_eta",&_jet_eta);
-      _rivetTree->Branch("jet_phi",&_jet_phi);
-      _rivetTree->Branch("jet_m",&_jet_m);
-      _rivetTree->Branch("jet_flav",&_jet_flav);
-      _rivetTree->Branch("jet_e",&_jet_e);
-      
-      // Jets      
-      _rivetTree->Branch("njet", &_njet, "njet/I");
-      //met
-      _rivetTree->Branch("met",&_met,"met/F");
-      _rivetTree->Branch("ht",&_ht,"ht/F");
-      _rivetTree->Branch("nnevent",&_nnevent,"nnevent/I");
-      _rivetTree->Branch("qqevent",&_qqevent,"qqevent/I");
-      _rivetTree->Branch("zmass",&_zmass,"zmass/F");
-      _rivetTree->Branch("tmass",&_tmass,"tmass/F");
     }
     
 
     // Do the analysis
     void analyze(const Event& event) {
-      //Reset the variables
-    _nevt       = 0;
-    _weight     = 0;
-    _njet       = 0; 
-    _met        = 0;
-    _ht         = 0;
-    _nnevent    = 0;
-    _qqevent    = 0;
-    _zmass      = 0;
-    _tmass      = 0;
-
-    _jet_pt.clear();
-    _jet_eta.clear();
-    _jet_phi.clear();
-    _jet_m.clear();
-    _jet_flav.clear();
-    _jet_e.clear();
-   
-    /// Four momentum of the jets
-     //Start event
-
       bool hadronicZevent   = false;
       bool neutrinoZevent   = false;
 
-      _weight = event.weight();
+      double _weight = event.weight();
+      double _met, _ht=0,_njet,_jet1_pt,_jet2_pt;
+      double _bjet1_pt,_bjet2_pt;
+      double _zmass=0,_t_mass;
 
       const GenEvent& ev = *(event.genEvent());
-      _nevt = ev.event_number();
 
       const MissingMomentum& met = applyProjection<MissingMomentum>(event, "MissingET");
       _met  = met.vectorEt().mod()/GeV;
@@ -126,18 +86,17 @@ namespace Rivet {
       const Particles bhadrons = sortByPt(applyProjection<HeavyHadrons>(event, "BCHadrons").bHadrons());
       const FastJets& jetpro = applyProjection<FastJets>(event, "Jets");
       const Jets alljets = jetpro.jetsByPt(20*GeV);
+      foreach (const Jet& j, alljets) { _ht += j.pT(); }
  
+
       const ZFinder & znunuFinder   = applyProjection<ZFinder>(event,"znunuFinder");
       const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
       
 
-      MSG_INFO("Event number "<<_nevt );
- 
       if(znunuFinder.size() !=0)
       {
           neutrinoZevent= true;
           _zmass = znunuFinder.bosons()[0].momentum().mass()/GeV;
-          _nnevent = 1;
       }
  
       if(neutrinoZevent)
@@ -160,6 +119,11 @@ namespace Rivet {
       {
           vetoEvent;
       }
+      else
+      {
+          _jet1_pt  = alljets.at(0).pT()/GeV;
+          _jet2_pt  = alljets.at(1).pT()/GeV;
+      }
  
       //Find b-jets
       Jets bjets,ljets;
@@ -181,29 +145,11 @@ namespace Rivet {
       {
           vetoEvent;
       }
-
-      //Fill jet variables
-      foreach (const Jet &j,alljets)
+      else
       {
-          _ht += j.pT()/GeV;
-          MSG_INFO("jet pt : "<<j.pT()/GeV);
-          _jet_pt.push_back(j.pT()/GeV);
-          _jet_eta.push_back(j.eta());
-          _jet_phi.push_back(j.phi());
-          _jet_m.push_back(j.mass()/GeV);
-          _jet_e.push_back(j.E()/GeV);
-
-          bool isBjet =false;
-          foreach(const Particle &b, bhadrons)
-          {
-              if(deltaR(j,b) <0.3)
-              {
-                  isBjet =true;
-              }
-          }
-          _jet_flav.push_back((isBjet)?1:0);
-      }
-
+        sort(bjets.begin(),bjets.end(),cmpMomByPt);
+        _bjet1_pt = bjets.at(0).pT()/GeV;
+        _bjet2_pt = bjets.at(1).pT()/GeV;
     
       Jets remainJets;
       if(neutrinoZevent)
@@ -236,7 +182,6 @@ namespace Rivet {
           {
               hadronicZevent= true;
               _zmass = Zmass;
-              _qqevent = 1;
               foreach (const Jet &myjet, ljets)
               {
                   if(myjet.pT() !=zjet1.pT() || myjet.pT() != zjet2.pT())
@@ -289,61 +234,55 @@ namespace Rivet {
       {
         t_had = t2;
       }
-      _tmass = t_had.mass()/GeV;
+      _t_mass = t_had.mass()/GeV;
 
 
+      //Fill histograms
 
-      if(neutrinoZevent|| hadronicZevent)
+      if(neutrinoZevent)
       {
-          _rivetTree->Fill();
+          _h_nn_met->fill(_met,_weight);
+          _h_nn_ht->fill(_ht,_weight);
+          _h_nn_njet->fill(_njet,_weight);
+          _h_nn_jet_1_pt->fill(_jet1_pt,_weight);
+          _h_nn_bjet1_pt->fill(_bjet1_pt,_weight);
+          _h_nn_jet_2_pt->fill(_jet2_pt,_weight);
+          _h_nn_bjet2_pt->fill(_bjet2_pt,_weight);
+          _h_nn_zmass->fill(_zmass,_weight);
+          _h_nn_t_mass->fill(_t_mass,_weight);
+      }
+      if(hadronicZevent)
+      {
+          _h_qq_met->fill(_met,_weight);
+          _h_qq_ht->fill(_ht,_weight);
+          _h_qq_njet->fill(_njet,_weight);
+          _h_qq_jet_1_pt->fill(_jet1_pt,_weight);
+          _h_qq_bjet1_pt->fill(_bjet1_pt,_weight);
+          _h_qq_jet_2_pt->fill(_jet2_pt,_weight);
+          _h_qq_bjet2_pt->fill(_bjet2_pt,_weight);
+          _h_qq_zmass->fill(_zmass,_weight);
+          _h_qq_t_mass->fill(_t_mass,_weight);
       }
     }
+  }
     
     
     void finalize() { 
       // Write the tree to file.
-     _rivetTree->Write();
-
     }
     
     //@}
 
-
   private:
-
-    /// The tree
-    TTree* _rivetTree;
-    
-    /// The file for the Tree
-    TFile* _treeFile;
-
-    /// The filename
-    TString _treeFileName;
-
-
-    /// @name The ntuple variables.
-    //@{
-    /// Event number
-    int _nevt;
-    float _met;
-    float _ht;
-    float _zmass;
-    float _tmass;
-    float _weight;
-    int _nnevent;
-    int _qqevent;
-    int _njet; 
-    
-    /// Four momentum of the jets
-    std::vector<float> _jet_pt;
-    std::vector<float> _jet_eta;
-    std::vector<float> _jet_phi;
-    std::vector<float> _jet_m;
-    std::vector<float> _jet_flav;
-    std::vector<float> _jet_e;
+    Histo1DPtr _h_nn_met,_h_nn_ht;
+    Histo1DPtr _h_qq_met,_h_qq_ht;
+    Histo1DPtr _h_nn_njet,_h_nn_jet_1_pt,_h_nn_jet_2_pt,_h_nn_bjet1_pt,_h_nn_bjet2_pt;
+    Histo1DPtr _h_qq_njet,_h_qq_jet_1_pt,_h_qq_jet_2_pt,_h_qq_bjet1_pt,_h_qq_bjet2_pt;
+    Histo1DPtr _h_nn_zmass,_h_nn_t_mass;
+    Histo1DPtr _h_qq_zmass,_h_qq_t_mass;
 
   };
-  // This global object acts as a hook for the plugin system
-  // AnalysisBuilder<ttznnqq_analysis> plugin_ttznnqq_analysis;
+
   DECLARE_RIVET_PLUGIN(ttznnqq_analysis);
+
 }
