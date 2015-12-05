@@ -17,7 +17,7 @@ import os
 rivet = Rivet_i()
 rivet.AnalysisPath = os.environ['PWD']
 
-rivet.Analyses +=["ROOTANALYSIS"]
+rivet.Analyses +=["ttznnqq_analysis"]
 rivet.RunName = ""
 rivet.HistoFile = "ttznnqq_analysis"
 rivet.CrossSection = xs # xs to be read from athena or pathena commandline

@@ -15,8 +15,9 @@
 
 #include <vector>
 
-namespace Rivet {
 
+
+namespace Rivet {
 
   /// @brief Book and fill a ROOT tree with simulated data.
   ///
@@ -27,7 +28,7 @@ namespace Rivet {
   class ttznnqq_analysis: public Analysis{
   public:
 
-    ttznnqq_analysis() : Analysis("ROOTANALYSIS") { 
+    ttznnqq_analysis() : Analysis("ttznnqq_analysis") { 
       // Choose cuts
       _treeFileName = "rivetTree.root";
     }
@@ -69,22 +70,12 @@ namespace Rivet {
       _rivetTree->Branch("nevt", &_nevt, "nevt/I");
       _rivetTree->Branch("weight",&_weight,"weight/F");
 
-      _jet_pt   = new std::vector<float>();
-      _rivetTree->Branch("jet_pt","vector<float>",&_jet_pt);
-      
-      _jet_eta  = new std::vector<float>();
-      _rivetTree->Branch("jet_eta","vector<float>",&_jet_eta);
-
-      _jet_phi  = new std::vector<float>();
-      _rivetTree->Branch("jet_phi","vector<float>",&_jet_phi);
-
-      _jet_m    = new std::vector<float>();
-      _rivetTree->Branch("jet_m","vector<float>",&_jet_m);
-
-      _jet_flav = new std::vector<float>();
-      _rivetTree->Branch("jet_flav","vector<float>",&_jet_flav);
-
-      _jet_e    = new std::vector<float>();
+      _rivetTree->Branch("jet_pt",&_jet_pt);
+      _rivetTree->Branch("jet_eta",&_jet_eta);
+      _rivetTree->Branch("jet_phi",&_jet_phi);
+      _rivetTree->Branch("jet_m",&_jet_m);
+      _rivetTree->Branch("jet_flav",&_jet_flav);
+      _rivetTree->Branch("jet_e",&_jet_e);
       
       // Jets      
       _rivetTree->Branch("njet", &_njet, "njet/I");
@@ -110,15 +101,16 @@ namespace Rivet {
     _qqevent    = 0;
     _zmass      = 0;
     _tmass      = 0;
+
+    _jet_pt.clear();
+    _jet_eta.clear();
+    _jet_phi.clear();
+    _jet_m.clear();
+    _jet_flav.clear();
+    _jet_e.clear();
    
     /// Four momentum of the jets
-    _jet_pt->resize(0);
-    _jet_eta->resize(0);
-    _jet_phi->resize(0);
-    _jet_m->resize(0);
-    _jet_flav->resize(0);
-
-    //Start event
+     //Start event
 
       bool hadronicZevent   = false;
       bool neutrinoZevent   = false;
@@ -137,6 +129,9 @@ namespace Rivet {
  
       const ZFinder & znunuFinder   = applyProjection<ZFinder>(event,"znunuFinder");
       const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
+      
+
+      MSG_INFO("Event number "<<_nevt );
  
       if(znunuFinder.size() !=0)
       {
@@ -192,10 +187,11 @@ namespace Rivet {
       {
           _ht += j.pT()/GeV;
           MSG_INFO("jet pt : "<<j.pT()/GeV);
-          _jet_pt->push_back(j.pT()/GeV);
-          _jet_eta->push_back(j.eta());
-          _jet_phi->push_back(j.phi());
-          _jet_m->push_back(j.mass()/GeV);
+          _jet_pt.push_back(j.pT()/GeV);
+          _jet_eta.push_back(j.eta());
+          _jet_phi.push_back(j.phi());
+          _jet_m.push_back(j.mass()/GeV);
+          _jet_e.push_back(j.E()/GeV);
 
           bool isBjet =false;
           foreach(const Particle &b, bhadrons)
@@ -205,7 +201,7 @@ namespace Rivet {
                   isBjet =true;
               }
           }
-          _jet_flav->push_back((isBjet)?1:0);
+          _jet_flav.push_back((isBjet)?1:0);
       }
 
     
@@ -259,16 +255,17 @@ namespace Rivet {
       // with an always terrible 4-vector estimate which should always be "beaten" by
       // a real jet pair.
       FourMomentum W(10*sqrtS(), 0, 0, 0);
-      for (size_t i = 0; i < remainJets.size()-1; ++i) 
+      for(size_t i =0 ; i < remainJets.size() ; ++i)
       {
-          for (size_t j = i + 1; j < remainJets.size(); ++j) 
+          for(size_t j =0; j < remainJets.size(); ++j)
           {
-              const FourMomentum Wcand = remainJets[i].momentum() + remainJets[j].momentum();
-              MSG_TRACE(i << "," << j << ": candidate W mass = " << Wcand.mass()/GeV
-                    << " GeV, vs. incumbent candidate with " << W.mass()/GeV << " GeV");
-              if (fabs(Wcand.mass() - 80.4*GeV) < fabs(W.mass() - 80.4*GeV)) 
+              if( i !=j)
               {
-                  W = Wcand;
+                  const FourMomentum Wcand = remainJets[0].momentum() + remainJets[1].momentum();
+                  if(fabs(Wcand.mass() - 80.4*GeV) < fabs(W.mass() - 80.04*GeV))
+                  {
+                      W = Wcand;
+                  }
               }
           }
       }
@@ -338,12 +335,12 @@ namespace Rivet {
     int _njet; 
     
     /// Four momentum of the jets
-    std::vector<float>* _jet_pt;
-    std::vector<float>* _jet_eta;
-    std::vector<float>* _jet_phi;
-    std::vector<float>* _jet_m;
-    std::vector<float>* _jet_flav;
-    std::vector<float>* _jet_e;
+    std::vector<float> _jet_pt;
+    std::vector<float> _jet_eta;
+    std::vector<float> _jet_phi;
+    std::vector<float> _jet_m;
+    std::vector<float> _jet_flav;
+    std::vector<float> _jet_e;
 
   };
   // This global object acts as a hook for the plugin system
