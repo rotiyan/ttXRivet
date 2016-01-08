@@ -40,7 +40,7 @@ namespace Rivet {
     /// Book histograms and initialise projections before the run
     void init() {
 
-        addProjection(FastJets(FinalState(-4.2,4.2,0*GeV),FastJets::ANTIKT,0.4),"Jets");
+        addProjection(FastJets(FinalState(-2.5,2.5,25*GeV),FastJets::ANTIKT,0.4),"Jets");
         addProjection(MissingMomentum(FinalState(-4,4,0*GeV)),"MissingET");
 
 
@@ -50,6 +50,7 @@ namespace Rivet {
         _h_wMinus_HT= bookHisto1D("wMinus_HT",100,50,1050);
         _h_wPlus_nJets = bookHisto1D("wPlus_nJets",11,-0.5,10.5);
         _h_wMinus_nJets= bookHisto1D("wMinus_nJets",11,-0.5,10.5);
+        _h_ttbar_pt = bookHisto1D("ttbar_pt",150,130,430);
         _h_t1_mass  = bookHisto1D("t1_mass",150,130,430);
         _h_t2_mass  = bookHisto1D("t2_mass",150,130,430);
         _h_t1_pt    = bookHisto1D("t1_pt",100,50,450);
@@ -114,7 +115,7 @@ namespace Rivet {
   
       
       const FastJets & jetProj  = applyProjection<FastJets>(event,"Jets");
-      const Jets alljets        = jetProj.jetsByPt(20*GeV);
+      const Jets alljets        = jetProj.jetsByPt(25*GeV);
       double event_ht           = 0;
       foreach(const Jet &j, alljets){ event_ht += j.pT()*GeV;}
 
@@ -185,7 +186,7 @@ namespace Rivet {
       {
           bool wlepDecay = false;
           bool noTopParent = false;
-          GenVertex *wVert      = W.genParticle()->production_vertex();
+          //GenVertex *wVert      = W.genParticle()->production_vertex();
           GenVertex *wEndVert   = W.genParticle()->end_vertex();
 
           foreach (const Particle &topW, wBosons)
@@ -241,6 +242,7 @@ namespace Rivet {
           _h_top_dPhi->fill(deltaPhi(topQuarks[0],topQuarks[1]),weight);
           _h_top_dR->fill(deltaR(topQuarks[0],topQuarks[1]),weight);
         
+          _h_ttbar_pt->fill( (topQuarks[0].momentum() + topQuarks[1].momentum()).perp()*GeV,weight);
           _h_t1_mass->fill(topQuarks[0].momentum().mass()*GeV,weight);
           _h_t1_pt->fill(topQuarks[0].momentum().perp()*GeV,weight);
           _h_t1_eta->fill(topQuarks[0].momentum().eta(),weight);
@@ -307,6 +309,7 @@ namespace Rivet {
         scale(_h_wMinus_HT,norm);
         scale(_h_wPlus_nJets,norm);
         scale(_h_wMinus_nJets,norm);
+        scale(_h_ttbar_pt,norm);
         scale(_h_t1_mass,norm);
         scale(_h_t2_mass,norm);
         scale(_h_t1_pt,norm);
@@ -364,6 +367,7 @@ namespace Rivet {
     Histo1DPtr _h_wPlus_MET,_h_wMinus_MET;
     Histo1DPtr _h_wPlus_HT,_h_wMinus_HT;
     Histo1DPtr _h_wPlus_nJets,_h_wMinus_nJets;
+    Histo1DPtr _h_ttbar_pt;
     Histo1DPtr _h_t1_mass;
     Histo1DPtr _h_t2_mass;
     Histo1DPtr _h_t1_pt;
