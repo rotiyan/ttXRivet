@@ -18,5 +18,5 @@ rivet.AnalysisPath = os.environ['PWD']
 rivet.Analyses += [ 'ttw_analysis']
 rivet.RunName = ""
 rivet.HistoFile = "myanalysis"
-rivet.CrossSection = 9.1185E+03
+rivet.CrossSection = xs
 job += rivet
