@@ -4,7 +4,7 @@ from glob import glob
 theApp.EvtMax = -1
 
 import AthenaPoolCnvSvc.ReadAthenaPool
-svcMgr.EventSelector.InputCollections = glob('/scratch/rohin/user.mcfayden.evnt.test.2015-04-29_153313.300001.test_EXT1.26329904/*')
+svcMgr.EventSelector.InputCollections = glob('/home/narayan/samples/user.mcfayden.evnt.2015-05-07_144035.400002.8TeV_ttW_EXT1/*.')
 
 from AthenaCommon.AlgSequence import AlgSequence
 job = AlgSequence()
