@@ -79,6 +79,7 @@ namespace Rivet {
 
       _sumofweight =0;
     
+      _h_sumOfWeights    = bookHisto1D("sumOfWeight",2,-0.5,1.5);
       _h_weight     = bookHisto1D("weight",200,-20,20);
       _h_evnt_MET_before   = bookHisto1D("MET_before",200,0,800);
       _h_evnt_MET_after = bookHisto1D("MET_after",200,0,800);
@@ -176,7 +177,9 @@ namespace Rivet {
 
 
     void analyze(const Event& event) {
+
       const double weight = event.weight();
+      _sumofweight += event.weight();
 
       // Use the "LFS" projection to require at least one hard charged
       // lepton. This is an experimental signature for the leptonically decaying
@@ -290,8 +293,6 @@ namespace Rivet {
      _h_weight->fill(weight);
       _h_evnt_nEl->fill(electrons.size(),weight);
       _h_evnt_nMu->fill(muons.size(),weight);
-
-      _sumofweight += event.weight();
 
 
       if(zeeFinder.bosons().size()>0)
@@ -496,7 +497,10 @@ namespace Rivet {
     void finalize() {
         MSG_INFO("CROSS SSECTION:"<<crossSection());
         MSG_INFO("Sum of weights:"<<sumOfWeights());
-      double norm = crossSection()/sumOfWeights();
+      //double norm = crossSection()/sumOfWeights();
+
+        _h_sumOfWeights->fill(1,_sumofweight);
+      double norm = 1;
 
       scale(_h_evnt_MET_before,norm);
       scale(_h_evnt_MET_after,norm);
@@ -585,7 +589,7 @@ namespace Rivet {
     // @name Histogram data members
     //@{
 
-    Histo1DPtr _h_weight;
+    Histo1DPtr _h_weight,_h_sumOfWeights;
     Histo1DPtr _h_evnt_MET_before, _h_evnt_MET_after;
     Histo1DPtr _h_evnt_njets;
     Histo1DPtr _h_evnt_HT;
