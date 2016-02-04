@@ -93,6 +93,19 @@ namespace Rivet {
       vfs.addVetoOnThisFinalState(lfs);
       addProjection(vfs, "VFS");
 
+
+      _h_sumOfWeights        = bookHisto1D("sumOfWeights",2,-0.5,1.5);
+
+      _h_evntCounter        = bookHisto1D("evntCounter",2,-0.5,1.5);
+      _h_2lee4j_evntCounter = bookHisto1D("2lee4j_evntCounter",2,-0.5,1.5); 
+      _h_2lmumu4j_evntCounter= bookHisto1D("2lmumu4j_evntCounter",2,-0.5,1.5);
+      _h_2lemu4j_evntCounter= bookHisto1D("2lemu4j_evntCounter",2,-0.5,1.5);
+      _h_2lee5j_evntCounter = bookHisto1D("2lee5j_evntCounter",2,-0.5,1.5);
+      _h_2lmumu5j_evntCounter= bookHisto1D("2lmumu5j_evntCounter",2,-0.5,1.5);
+      _h_2lemu5j_evntCounter= bookHisto1D("2lemu5j_evntCounter",2,-0.5,1.5);
+      _h_3l_evntCounter     = bookHisto1D("3l_evntCounter",2,-0.5,1.5);
+      _h_2l1tau_evntCounter = bookHisto1D("2l1tau_evntCounter",2,-0.5,1.5);
+
       //Histogramming 
       _h_2lee4j_nBjets     = bookHisto1D("2lee4j_nBjets",10,-0.5,9.5);
       _h_2lee4j_nLjets     = bookHisto1D("2lee4j_nLjets",10,-0.5,9.5);
@@ -222,12 +235,13 @@ namespace Rivet {
       _sumofweight =1;
       nEvents = 0;
       _sumWeight_2lee4j=1;
-      _sumWeight_2lmumu5j=1;
+      _sumWeight_2lmumu4j=1;
       _sumWeight_2lemu4j=1;
       _sumWeight_2lee5j=1;
       _sumWeight_2lmumu5j=1;
       _sumWeight_2lemu5j=1;
       _sumWeight_2l1tau=1;
+      _sumWeight_3l=1;
 
 
     }
@@ -235,6 +249,9 @@ namespace Rivet {
 
     void analyze(const Event& event) {
       const double weight = event.weight();
+
+      _h_evntCounter->fill(1,weight);
+      _sumofweight += weight;
 
       // Use the "LFS" projection to require at least one hard charged
       // lepton. This is an experimental signature for the leptonically decaying
@@ -263,44 +280,32 @@ namespace Rivet {
 
       foreach (const Particle & el, applyProjection<PromptFinalState>(event,"electrons").particlesByPt())
       {
-          if(el.pT()/GeV > 10 && el.abseta() <2.5)
+          if(el.pT()/GeV > 10 && fabs(el.eta()) <2.5)
           {
               elVec.push_back(el);
           }
       }
       foreach (const Particle &mu, applyProjection<PromptFinalState>(event,"muons").particlesByPt())
       {
-          if(mu.pT()/GeV >10 && mu.abseta() <2.5)
+          if(mu.pT()/GeV >10 && fabs(mu.eta()) <2.5)
           {
               muVec.push_back(mu);
           }
       }
-      
-      /*foreach (const Particle& lepton, lfs.chargedLeptons()) 
-      {
-          if(lepton.pT() > 10*GeV &&lepton.abseta() < 2.5)// && !lepton.fromBottom()) //!lepton.fromDecay()) //Make sure the lepton is not from tau or hadron decays
-          {
-              if(lepton.abspid()== PID::ELECTRON)
-              {
-                  elVec.push_back(lepton);
-              }
-              else if (lepton.abspid() == PID::MUON)
-              {
-                  muVec.push_back(lepton);
-              }
-          }
-      }*/
       const TauFinder &tauhad = applyProjection<TauFinder>(event,"TauHadronic");
       foreach (const Particle &tau, tauhad.taus())
       {
-          int nProng = 0;
-          foreach (Particle p , tau.children())
+          if(tau.pT()/GeV >25 )
           {
+            int nProng = 0;
+            foreach (Particle p , tau.children())
+            {
               if (p.threeCharge()!=0) nProng++;
-          }
-          if(nProng ==2 || nProng ==3)
-          {
+            }
+            if(nProng ==2 || nProng ==3)
+            {
               tauVec.push_back(tau);
+            }
           }
       }
 
@@ -311,7 +316,6 @@ namespace Rivet {
       int nLep = elVec.size() + muVec.size() + tauVec.size();
       int elqsum=0;
       int muqsum=0;
-      int emuqsum=0;
 
       foreach(const Particle& el, elVec)
       {
@@ -325,8 +329,10 @@ namespace Rivet {
       Jets jets;
       foreach (const Jet &jet , applyProjection<FastJets>(event, "Jets").jetsByPt(25*GeV))
       {
-          if(fabs(jet.eta()) <2.5)
+          if(fabs(jet.eta()) <2.5 )
+          {
               jets.push_back(jet);
+          }
       }
       double ht = 0.0;
       foreach (const Jet& j, jets) { ht += j.pT(); }
@@ -337,17 +343,6 @@ namespace Rivet {
       foreach (const Jet& jet, jets) 
       {
           alljets.push_back(jet);
-          /*foreach (const Particle& b, bhadrons) 
-          {
-              if (deltaR(jet,b) < 0.3)
-              {
-                  bjets.push_back(jet);
-              }
-              else 
-              {
-                  ljets.push_back(jet);
-              }
-          }*/
           if(jet.bTagged())
           {
               bjets.push_back(jet);
@@ -370,10 +365,11 @@ namespace Rivet {
              MSG_INFO(elVec.size()<<" , " <<muVec.size());
              //2lee4j
             //if(abs(elqsum) ==2 && elVec.size()==2 )// && elVec[0].pT()/GeV > 25 && elVec[1].pT()/GeV>20)
-            if(elVec.size()>=2 && elVec[0].pT()/GeV >25 && elVec[1].pT()/GeV > 20 && abs(elqsum)==2)
+            if(elVec.size()==2 && elVec[0].pT()/GeV >25 && elVec[1].pT()/GeV > 25 &&(fabs(elVec[0].eta())<1.37 && fabs(elVec[1].eta()) <1.37) && abs(elqsum)==2)
             {
                 _sumWeight_2lee4j += event.weight();
                 MSG_INFO("Filling 2lee4j Histograms");
+                _h_2lee4j_evntCounter->fill(1,weight);
 
                 _h_2lee4j_nBjets->fill(bjets.size(),weight);
                 _h_2lee4j_nLjets->fill(ljets.size(),weight);
@@ -391,10 +387,11 @@ namespace Rivet {
                 _h_2lee4j_el_eta->fill(elVec[0].eta(),weight);
             }
             //2lmumu4j
-            if(muVec.size() ==2 && abs(muqsum)==2 && muVec.size() ==2 && muVec[0].pT()/GeV > 25 && muVec[1].pT()/GeV >20)
+            if(muVec.size() ==2 && abs(muqsum)==2 && muVec.size() ==2 && muVec[0].pT()/GeV > 25 && muVec[1].pT()/GeV >25)
             {
                 MSG_INFO("Filling 2lmumu4j histograms");
                 _sumWeight_2lmumu4j += event.weight();
+                _h_2lmumu4j_evntCounter->fill(1,weight);
 
                 _h_2lmumu4j_nBjets->fill(bjets.size(),weight);
                 _h_2lmumu4j_nLjets->fill(ljets.size(),weight);
@@ -412,39 +409,28 @@ namespace Rivet {
                 _h_2lmumu4j_mu_eta->fill(muVec[0].eta(),weight);
             }
             //2lemu4j
-            if(abs(emuqsum)==2 && elVec.size()==1 && muVec.size()==1 && elVec[0].pT()/GeV >20 && muVec[0].pT()/GeV >20)
+            if(abs(elqsum + muqsum)==2 && elVec.size()==1 && muVec.size()==1 && elVec[0].pT()/GeV >25 && fabs(elVec[0].eta())<1.37 && muVec[0].pT()/GeV >25)
             {
-                bool accept = false;
-                if(elVec[0].pT()/GeV > muVec[0].pT()/GeV && elVec[0].pT()/GeV >25 && muVec[0].pT()/GeV >20)
-                {
-                    accept = true;
-                }
-                else if (elVec[0].pT()/GeV < muVec[0].pT()/GeV && muVec[0].pT()/GeV>25 && elVec[0].pT()/GeV >20)
-                {
-                    accept = true;
-                }
-                if(accept)
-                { 
-                    _sumWeight_2lemu4j += event.weight();
+                _sumWeight_2lemu4j += event.weight();
 
-                    MSG_INFO("Filling 2lemu4j histograms");
-                    _h_2lemu4j_nBjets->fill(bjets.size(),weight);
-                    _h_2lemu4j_nLjets->fill(ljets.size(),weight);
-                    _h_2lemu4j_nJets->fill(alljets.size(),weight);
-                    
-                    _h_2lemu4j_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
-                    _h_2lemu4j_jet_1_eta->fill(alljets[0].eta(),weight);
-                    _h_2lemu4j_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
+                MSG_INFO("Filling 2lemu4j histograms");
+                _h_2lemu4j_evntCounter->fill(1,weight);
+                _h_2lemu4j_nBjets->fill(bjets.size(),weight);
+                _h_2lemu4j_nLjets->fill(ljets.size(),weight);
+                _h_2lemu4j_nJets->fill(alljets.size(),weight);
+                
+                _h_2lemu4j_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
+                _h_2lemu4j_jet_1_eta->fill(alljets[0].eta(),weight);
+                _h_2lemu4j_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
 
-                    _h_2lemu4j_nLep->fill(elVec.size() + muVec.size(),weight);
-                    _h_2lemu4j_nEl->fill(elVec.size(),weight);
-                    _h_2lemu4j_nMu->fill(muVec.size(),weight);
-                    
-                    _h_2lemu4j_el_pT->fill(elVec[0].pT()/GeV,weight);
-                    _h_2lemu4j_el_eta->fill(elVec[0].eta(),weight);
-                    _h_2lemu4j_mu_pT->fill(muVec[0].pT()/GeV,weight);
-                    _h_2lemu4j_mu_eta->fill(muVec[0].eta(),weight);
-                }
+                _h_2lemu4j_nLep->fill(elVec.size() + muVec.size(),weight);
+                _h_2lemu4j_nEl->fill(elVec.size(),weight);
+                _h_2lemu4j_nMu->fill(muVec.size(),weight);
+                
+                _h_2lemu4j_el_pT->fill(elVec[0].pT()/GeV,weight);
+                _h_2lemu4j_el_eta->fill(elVec[0].eta(),weight);
+                _h_2lemu4j_mu_pT->fill(muVec[0].pT()/GeV,weight);
+                _h_2lemu4j_mu_eta->fill(muVec[0].eta(),weight);
             }
          }
          
@@ -453,10 +439,11 @@ namespace Rivet {
              MSG_INFO(elVec.size()<<" , " <<muVec.size());
              //2lee5j
             //if(abs(elqsum) ==2 && elVec.size()==2 )// && elVec[0].pT()/GeV > 25 && elVec[1].pT()/GeV>20)
-            if(elVec.size()>=2 && elVec[0].pT()/GeV >25 && elVec[1].pT()/GeV > 20 && abs(elqsum)==2)
+            if(elVec.size()==2 && elVec[0].pT()/GeV >25 && elVec[1].pT()/GeV > 25 &&(fabs(elVec[0].eta())<1.37 && fabs(elVec[1].eta()) <1.37) && abs(elqsum)==2)
             {
                 _sumWeight_2lee5j += event.weight();
                 MSG_INFO("Filling 2lee5j Histograms");
+                _h_2lee5j_evntCounter->fill(1,weight);
 
                 _h_2lee5j_nBjets->fill(bjets.size(),weight);
                 _h_2lee5j_nLjets->fill(ljets.size(),weight);
@@ -474,10 +461,11 @@ namespace Rivet {
                 _h_2lee5j_el_eta->fill(elVec[0].eta(),weight);
             }
             //2lmumu5j
-            if(muVec.size() ==2 && abs(muqsum)==2 && muVec.size() ==2 && muVec[0].pT()/GeV > 25 && muVec[1].pT()/GeV >20)
+            if(muVec.size() ==2 && abs(muqsum)==2 && muVec.size() ==2 && muVec[0].pT()/GeV > 25 && muVec[1].pT()/GeV >25)
             {
                 MSG_INFO("Filling 2lmumu5j histograms");
                 _sumWeight_2lmumu5j += event.weight();
+                _h_2lmumu5j_evntCounter->fill(1,weight);
 
                 _h_2lmumu5j_nBjets->fill(bjets.size(),weight);
                 _h_2lmumu5j_nLjets->fill(ljets.size(),weight);
@@ -495,147 +483,147 @@ namespace Rivet {
                 _h_2lmumu5j_mu_eta->fill(muVec[0].eta(),weight);
             }
             //2lemu5j
-            if(abs(emuqsum)==2 && elVec.size()==1 && muVec.size()==1 && elVec[0].pT()/GeV >20 && muVec[0].pT()/GeV >20)
+            if(abs(elqsum + muqsum)==2 && elVec.size()==1 && muVec.size()==1 && elVec[0].pT()/GeV >25 && fabs(elVec[0].eta())<1.37 && muVec[0].pT()/GeV >25)
             {
-                bool accept = false;
-                if(elVec[0].pT()/GeV > muVec[0].pT()/GeV && elVec[0].pT()/GeV >25 && muVec[0].pT()/GeV >20)
-                {
-                    accept = true;
-                }
-                else if (elVec[0].pT()/GeV < muVec[0].pT()/GeV && muVec[0].pT()/GeV>25 && elVec[0].pT()/GeV >20)
-                {
-                    accept = true;
-                }
-                if(accept)
-                { 
-                    _sumWeight_2lemu5j += event.weight();
+                _sumWeight_2lemu5j += event.weight();
 
-                    MSG_INFO("Filling 2lemu5j histograms");
-                    _h_2lemu5j_nBjets->fill(bjets.size(),weight);
-                    _h_2lemu5j_nLjets->fill(ljets.size(),weight);
-                    _h_2lemu5j_nJets->fill(alljets.size(),weight);
-                    
-                    _h_2lemu5j_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
-                    _h_2lemu5j_jet_1_eta->fill(alljets[0].eta(),weight);
-                    _h_2lemu5j_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
-
-                    _h_2lemu5j_nLep->fill(elVec.size() + muVec.size(),weight);
-                    _h_2lemu5j_nEl->fill(elVec.size(),weight);
-                    _h_2lemu5j_nMu->fill(muVec.size(),weight);
-                    
-                    _h_2lemu5j_el_pT->fill(elVec[0].pT()/GeV,weight);
-                    _h_2lemu5j_el_eta->fill(elVec[0].eta(),weight);
-                    _h_2lemu5j_mu_pT->fill(muVec[0].pT()/GeV,weight);
-                    _h_2lemu5j_mu_eta->fill(muVec[0].eta(),weight);
-                }
-            }
-          }
-        }
-        //3l
-        if( (elVec.size() + muVec.size()) ==3 
-                && ((alljets.size()>=4 && bjets.size()>=1) || (alljets.size()==3 && bjets.size() >=2)))
-        {
-            if( abs(elqsum + muqsum + emuqsum) ==1)
-            {
-                std::pair<Particle,Particle> sslepPair;
-                std::pair<Particle,Particle> oslepPair; //Opposite sign same flavor
-                //find same sign leptons
-                Particles Leptons = elVec;
-                Leptons.insert(Leptons.end(),muVec.begin(),muVec.end());
-                for(size_t i = 0; i < Leptons.size(); ++i)
-                {
-                    for(size_t j = i+1; j<Leptons.size(); ++j)
-                    {
-                        Particle lep1 = Leptons[i];
-                        Particle lep2 = Leptons[j];
-                        if(lep1.charge()*lep2.charge()==1)
-                        {
-                            sslepPair= std::make_pair(lep1,lep2);
-                        }
-                        if(lep1.charge()*lep2.charge()==-1 && lep1.pid() == abs(lep2.pid()))
-                        {
-                            oslepPair = std::make_pair(lep1,lep2);
-                        }
-                    }
-                }
-
-                if(sslepPair.first.pT()/GeV >20 && sslepPair.second.pT()/GeV >20 
-                        && ( (oslepPair.first.momentum() + oslepPair.second.momentum()).mass()/GeV - 91.186) > 10 )
-                {
-
-                    MSG_INFO("Filling 3l histograms");
-                    _sumWeight_3l   += event.weight();
-
-                    _h_3l_nBjets->fill(bjets.size(),weight);
-                    _h_3l_nLjets->fill(ljets.size(),weight);
-                    _h_3l_nJets->fill(alljets.size(),weight);
-                    
-                    _h_3l_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
-                    _h_3l_jet_1_eta->fill(alljets[0].eta(),weight);
-                    _h_3l_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
-
-                    _h_3l_nLep->fill(elVec.size() + muVec.size(),weight);
-                    _h_3l_nEl->fill(elVec.size(),weight);
-                    _h_3l_nMu->fill(muVec.size(),weight);
-                    
-                    _h_3l_el_pT->fill(elVec[0].pT()/GeV,weight);
-                    _h_3l_el_eta->fill(elVec[0].eta(),weight);
-                    _h_3l_mu_pT->fill(muVec[0].pT()/GeV,weight);
-                    _h_3l_mu_eta->fill(muVec[0].eta(),weight);
-                    if(tauVec.size()>0)
-                    {
-                        _h_3l_tau_pT->fill(tauVec[0].pT()/GeV,weight);
-                        _h_3l_tau_eta->fill(tauVec[0].eta(),weight);
-                    }
-                }
-            }
-        }
-
-        //2l1tau
-        if(tauVec.size()==1 && alljets.size()>=4 && bjets.size() >=1)
-        {
-            Particles lepVec = elVec;
-            lepVec.insert(lepVec.end(), muVec.begin(), muVec.end());
-            sortByPt(lepVec);
-
-            if(abs(elqsum + muqsum + emuqsum) ==2 && lepVec[0].pT()/GeV > 25 && lepVec[1].pT()/GeV > 15)
-            {
-                MSG_INFO("Filling 2l1tau histograms");
-                _sumWeight_2l1tau += event.weight();
-
-                _h_2l_1tau_nBjets->fill(bjets.size(),weight);
-                _h_2l_1tau_nLjets->fill(ljets.size(),weight);
-                _h_2l_1tau_nJets->fill(alljets.size(),weight);
+                MSG_INFO("Filling 2lemu5j histograms");
+                _h_2lemu5j_evntCounter->fill(1,weight);
+                _h_2lemu5j_nBjets->fill(bjets.size(),weight);
+                _h_2lemu5j_nLjets->fill(ljets.size(),weight);
+                _h_2lemu5j_nJets->fill(alljets.size(),weight);
                 
-                _h_2l_1tau_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
-                _h_2l_1tau_jet_1_eta->fill(alljets[0].eta(),weight);
-                _h_2l_1tau_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
+                _h_2lemu5j_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
+                _h_2lemu5j_jet_1_eta->fill(alljets[0].eta(),weight);
+                _h_2lemu5j_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
 
-                _h_2l_1tau_nLep->fill(elVec.size() + muVec.size(),weight);
-                _h_2l_1tau_nEl->fill(elVec.size(),weight);
-                _h_2l_1tau_nMu->fill(muVec.size(),weight);
+                _h_2lemu5j_nLep->fill(elVec.size() + muVec.size(),weight);
+                _h_2lemu5j_nEl->fill(elVec.size(),weight);
+                _h_2lemu5j_nMu->fill(muVec.size(),weight);
+                
+                _h_2lemu5j_el_pT->fill(elVec[0].pT()/GeV,weight);
+                _h_2lemu5j_el_eta->fill(elVec[0].eta(),weight);
+                _h_2lemu5j_mu_pT->fill(muVec[0].pT()/GeV,weight);
+                _h_2lemu5j_mu_eta->fill(muVec[0].eta(),weight);
+            }
+         }
+     }
+     //3l
+     if( (elVec.size() + muVec.size()) ==3 && ((alljets.size()>=4 && bjets.size()>=1) || (alljets.size()==3 && bjets.size() >=2)))
+     {
+         if( abs(elqsum + muqsum) ==1)
+         {
+             std::pair<Particle,Particle> sslepPair;
+             std::pair<Particle,Particle> oslepPair; //Opposite sign same flavor
+             //find same sign leptons
+             Particles Leptons = elVec;
+             Particle loneLepton;
+             Leptons.insert(Leptons.end(),muVec.begin(),muVec.end());
+             for(size_t i = 0; i < Leptons.size(); ++i)
+             {
+                 for(size_t j = i+1; j<Leptons.size(); ++j)
+                 {
+                     Particle lep1 = Leptons[i];
+                     Particle lep2 = Leptons[j];
 
+                     if(lep1.pT()/GeV >10 && lep2.pT()/GeV >10)
+                     {
+                         if(lep1.charge()*lep2.charge()==1)
+                         {
+                             sslepPair= std::make_pair(lep1,lep2);
+                         }
+                         if(lep1.charge()*lep2.charge()==-1 && lep1.pid() == abs(lep2.pid()))
+                         {
+                             oslepPair = std::make_pair(lep1,lep2);
+                         }
+                     }
+                }
+            }
+
+            if(sslepPair.first.pT()/GeV >20 && sslepPair.second.pT()/GeV >20 
+                        && ( (oslepPair.first.momentum() + oslepPair.second.momentum()).mass()/GeV - 91.186) > 10 )
+            {
+                MSG_INFO("Filling 3l histograms");
+                _h_3l_evntCounter->fill(1,weight);
+                _sumWeight_3l   += event.weight();
+
+                _h_3l_nBjets->fill(bjets.size(),weight);
+                _h_3l_nLjets->fill(ljets.size(),weight);
+                _h_3l_nJets->fill(alljets.size(),weight);
+                
+                _h_3l_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
+                _h_3l_jet_1_eta->fill(alljets[0].eta(),weight);
+                _h_3l_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
+
+                _h_3l_nLep->fill(elVec.size() + muVec.size(),weight);
+                _h_3l_nEl->fill(elVec.size(),weight);
+                _h_3l_nMu->fill(muVec.size(),weight);
+                    
                 if(elVec.size()>0)
                 {
-                    _h_2l_1tau_el_pT->fill(elVec[0].pT()/GeV,weight);
-                    _h_2l_1tau_el_eta->fill(elVec[0].eta(),weight);
+                    _h_3l_el_pT->fill(elVec[0].pT()/GeV,weight);
+                    _h_3l_el_eta->fill(elVec[0].eta(),weight);
                 }
                 if(muVec.size()>0)
                 {
-                    _h_2l_1tau_mu_pT->fill(muVec[0].pT()/GeV,weight);
-                    _h_2l_1tau_mu_eta->fill(muVec[0].eta(),weight);
+                    _h_3l_mu_pT->fill(muVec[0].pT()/GeV,weight);
+                    _h_3l_mu_eta->fill(muVec[0].eta(),weight);
                 }
-                _h_2l_1tau_tau_pT->fill(tauVec[0].pT()/GeV,weight);
-                _h_2l_1tau_tau_eta->fill(tauVec[0].eta(),weight);
+                if(tauVec.size()>0)
+                {
+                    _h_3l_tau_pT->fill(tauVec[0].pT()/GeV,weight);
+                    _h_3l_tau_eta->fill(tauVec[0].eta(),weight);
+                }
             }
         }
+     }
+     //2l1tau
+     if(tauVec.size()==1 && alljets.size()>=4 && bjets.size() >=1)
+     {
+         Particles lepVec = elVec;
+         lepVec.insert(lepVec.end(), muVec.begin(), muVec.end());
+         sortByPt(lepVec);
+
+         if(abs(elqsum + muqsum ) ==2 && lepVec[0].pT()/GeV > 15 && lepVec[1].pT()/GeV > 15 &&(lepVec[0].momentum() + lepVec[1].momentum() + tauVec[0].momentum()).mass()/GeV - 91.186 > 10 )
+         {
+             MSG_INFO("Filling 2l1tau histograms");
+             _h_2l1tau_evntCounter->fill(1,weight);
+             _sumWeight_2l1tau += event.weight();
+
+             _h_2l_1tau_nBjets->fill(bjets.size(),weight);
+             _h_2l_1tau_nLjets->fill(ljets.size(),weight);
+             _h_2l_1tau_nJets->fill(alljets.size(),weight);
+            
+             _h_2l_1tau_jet_1_pT->fill(alljets[0].pT()/GeV,weight); 
+             _h_2l_1tau_jet_1_eta->fill(alljets[0].eta(),weight);
+             _h_2l_1tau_jet_2_pT->fill(alljets[1].pT()/GeV,weight);
+
+             _h_2l_1tau_nLep->fill(elVec.size() + muVec.size(),weight);
+             _h_2l_1tau_nEl->fill(elVec.size(),weight);
+             _h_2l_1tau_nMu->fill(muVec.size(),weight);
+
+             if(elVec.size()>0)
+             {
+                 _h_2l_1tau_el_pT->fill(elVec[0].pT()/GeV,weight);
+                 _h_2l_1tau_el_eta->fill(elVec[0].eta(),weight);
+             }
+             if(muVec.size()>0)
+             {
+                 _h_2l_1tau_mu_pT->fill(muVec[0].pT()/GeV,weight);
+                 _h_2l_1tau_mu_eta->fill(muVec[0].eta(),weight);
+             }
+             _h_2l_1tau_tau_pT->fill(tauVec[0].pT()/GeV,weight);
+             _h_2l_1tau_tau_eta->fill(tauVec[0].eta(),weight);
+         }
     }
+  }
 
 
     void finalize() {
         MSG_INFO("CROSS SSECTION:"<<crossSection());
         MSG_INFO("Sum of weights:"<<_sumofweight);
-        double norm = crossSection()/_sumofweight;
+        //double norm = crossSection()/sumOfWeights();
+        double norm =1;
 
         MSG_INFO("Events 2lee4j: "<<_sumWeight_2lee4j);
         MSG_INFO("Events 2lmumu4j: "<<_sumWeight_2lmumu4j);
@@ -645,131 +633,143 @@ namespace Rivet {
         MSG_INFO("Events 2lemu5j: "<<_sumWeight_2lemu5j);
         MSG_INFO("Events 2l1tau: "<<_sumWeight_2l1tau);
         MSG_INFO("Events 3l: "<<_sumWeight_3l);
+
+        _h_sumOfWeights->fill(1,_sumofweight);
+
+        scale(_h_evntCounter,norm);
+        scale(_h_2lee4j_evntCounter,norm);
+        scale(_h_2lmumu4j_evntCounter,norm);
+        scale(_h_2lemu4j_evntCounter,norm);
+        scale(_h_2lee5j_evntCounter,norm);
+        scale(_h_2lmumu5j_evntCounter,norm);
+        scale(_h_2lemu5j_evntCounter,norm);
+        scale(_h_3l_evntCounter,norm);
+        scale(_h_2l1tau_evntCounter,norm);
  
         
-        scale(_h_2lee4j_nBjets     ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_nLjets     ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_nJets      ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_jet_1_pT   ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_jet_1_eta  ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_jet_2_pT   ,crossSection()/_sumWeight_2lee4j);
+        scale(_h_2lee4j_nBjets     ,norm);
+        scale(_h_2lee4j_nLjets     ,norm);
+        scale(_h_2lee4j_nJets      ,norm);
+        scale(_h_2lee4j_jet_1_pT   ,norm);
+        scale(_h_2lee4j_jet_1_eta  ,norm);
+        scale(_h_2lee4j_jet_2_pT   ,norm);
 
-        scale(_h_2lee4j_nLep       ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_nEl        ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_nMu        ,crossSection()/_sumWeight_2lee4j);
+        scale(_h_2lee4j_nLep       ,norm);
+        scale(_h_2lee4j_nEl        ,norm);
+        scale(_h_2lee4j_nMu        ,norm);
         
-        scale(_h_2lee4j_el_pT      ,crossSection()/_sumWeight_2lee4j);
-        scale(_h_2lee4j_el_eta     ,crossSection()/_sumWeight_2lee4j);
+        scale(_h_2lee4j_el_pT      ,norm);
+        scale(_h_2lee4j_el_eta     ,norm);
 
-        scale(_h_2lmumu4j_nBjets     ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_nLjets     ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_nJets      ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_jet_1_pT   ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_jet_1_eta  ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_jet_2_pT   ,crossSection()/_sumWeight_2lmumu4j);
+        scale(_h_2lmumu4j_nBjets     ,norm);
+        scale(_h_2lmumu4j_nLjets     ,norm);
+        scale(_h_2lmumu4j_nJets      ,norm);
+        scale(_h_2lmumu4j_jet_1_pT   ,norm);
+        scale(_h_2lmumu4j_jet_1_eta  ,norm);
+        scale(_h_2lmumu4j_jet_2_pT   ,norm);
 
-        scale(_h_2lmumu4j_nLep       ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_nEl        ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_nMu        ,crossSection()/_sumWeight_2lmumu4j);
+        scale(_h_2lmumu4j_nLep       ,norm);
+        scale(_h_2lmumu4j_nEl        ,norm);
+        scale(_h_2lmumu4j_nMu        ,norm);
         
-        scale(_h_2lmumu4j_mu_pT      ,crossSection()/_sumWeight_2lmumu4j);
-        scale(_h_2lmumu4j_mu_eta     ,crossSection()/_sumWeight_2lmumu4j);
+        scale(_h_2lmumu4j_mu_pT      ,norm);
+        scale(_h_2lmumu4j_mu_eta     ,norm);
 
-        scale(_h_2lemu4j_nBjets     ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_nLjets     ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_nJets      ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_jet_1_pT   ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_jet_1_eta  ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_jet_2_pT   ,crossSection()/_sumWeight_2lemu4j);
+        scale(_h_2lemu4j_nBjets     ,norm);
+        scale(_h_2lemu4j_nLjets     ,norm);
+        scale(_h_2lemu4j_nJets      ,norm);
+        scale(_h_2lemu4j_jet_1_pT   ,norm);
+        scale(_h_2lemu4j_jet_1_eta  ,norm);
+        scale(_h_2lemu4j_jet_2_pT   ,norm);
 
-        scale(_h_2lemu4j_nLep       ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_nEl        ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_nMu        ,crossSection()/_sumWeight_2lemu4j);
+        scale(_h_2lemu4j_nLep       ,norm);
+        scale(_h_2lemu4j_nEl        ,norm);
+        scale(_h_2lemu4j_nMu        ,norm);
         
-        scale(_h_2lemu4j_el_pT      ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_el_eta     ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_mu_pT      ,crossSection()/_sumWeight_2lemu4j);
-        scale(_h_2lemu4j_mu_eta     ,crossSection()/_sumWeight_2lemu4j);
+        scale(_h_2lemu4j_el_pT      ,norm);
+        scale(_h_2lemu4j_el_eta     ,norm);
+        scale(_h_2lemu4j_mu_pT      ,norm);
+        scale(_h_2lemu4j_mu_eta     ,norm);
 
-        scale(_h_2lee5j_nBjets     ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_nLjets     ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_nJets      ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_jet_1_pT   ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_jet_1_eta  ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_jet_2_pT   ,crossSection()/_sumWeight_2lee5j);
+        scale(_h_2lee5j_nBjets     ,norm);
+        scale(_h_2lee5j_nLjets     ,norm);
+        scale(_h_2lee5j_nJets      ,norm);
+        scale(_h_2lee5j_jet_1_pT   ,norm);
+        scale(_h_2lee5j_jet_1_eta  ,norm);
+        scale(_h_2lee5j_jet_2_pT   ,norm);
 
-        scale(_h_2lee5j_nLep       ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_nEl        ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_nMu        ,crossSection()/_sumWeight_2lee5j);
+        scale(_h_2lee5j_nLep       ,norm);
+        scale(_h_2lee5j_nEl        ,norm);
+        scale(_h_2lee5j_nMu        ,norm);
         
-        scale(_h_2lee5j_el_pT      ,crossSection()/_sumWeight_2lee5j);
-        scale(_h_2lee5j_el_eta     ,crossSection()/_sumWeight_2lee5j);
+        scale(_h_2lee5j_el_pT      ,norm);
+        scale(_h_2lee5j_el_eta     ,norm);
 
-        scale(_h_2lmumu5j_nBjets     ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_nLjets     ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_nJets      ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_jet_1_pT   ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_jet_1_eta  ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_jet_2_pT   ,crossSection()/_sumWeight_2lmumu5j);
+        scale(_h_2lmumu5j_nBjets     ,norm);
+        scale(_h_2lmumu5j_nLjets     ,norm);
+        scale(_h_2lmumu5j_nJets      ,norm);
+        scale(_h_2lmumu5j_jet_1_pT   ,norm);
+        scale(_h_2lmumu5j_jet_1_eta  ,norm);
+        scale(_h_2lmumu5j_jet_2_pT   ,norm);
 
-        scale(_h_2lmumu5j_nLep       ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_nEl        ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_nMu        ,crossSection()/_sumWeight_2lmumu5j);
+        scale(_h_2lmumu5j_nLep       ,norm);
+        scale(_h_2lmumu5j_nEl        ,norm);
+        scale(_h_2lmumu5j_nMu        ,norm);
         
-        scale(_h_2lmumu5j_mu_pT      ,crossSection()/_sumWeight_2lmumu5j);
-        scale(_h_2lmumu5j_mu_eta     ,crossSection()/_sumWeight_2lmumu5j);
+        scale(_h_2lmumu5j_mu_pT      ,norm);
+        scale(_h_2lmumu5j_mu_eta     ,norm);
 
-        scale(_h_2lemu5j_nBjets     ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_nLjets     ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_nJets      ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_jet_1_pT   ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_jet_1_eta  ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_jet_2_pT   ,crossSection()/_sumWeight_2lemu5j);
+        scale(_h_2lemu5j_nBjets     ,norm);
+        scale(_h_2lemu5j_nLjets     ,norm);
+        scale(_h_2lemu5j_nJets      ,norm);
+        scale(_h_2lemu5j_jet_1_pT   ,norm);
+        scale(_h_2lemu5j_jet_1_eta  ,norm);
+        scale(_h_2lemu5j_jet_2_pT   ,norm);
 
-        scale(_h_2lemu5j_nLep       ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_nEl        ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_nMu        ,crossSection()/_sumWeight_2lemu5j);
+        scale(_h_2lemu5j_nLep       ,norm);
+        scale(_h_2lemu5j_nEl        ,norm);
+        scale(_h_2lemu5j_nMu        ,norm);
         
-        scale(_h_2lemu5j_el_pT      ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_el_eta     ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_mu_pT      ,crossSection()/_sumWeight_2lemu5j);
-        scale(_h_2lemu5j_mu_eta     ,crossSection()/_sumWeight_2lemu5j);
+        scale(_h_2lemu5j_el_pT      ,norm);
+        scale(_h_2lemu5j_el_eta     ,norm);
+        scale(_h_2lemu5j_mu_pT      ,norm);
+        scale(_h_2lemu5j_mu_eta     ,norm);
 
-        scale(_h_3l_nBjets     ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_nLjets     ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_nJets      ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_jet_1_pT   ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_jet_1_eta  ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_jet_2_pT   ,crossSection()/_sumWeight_3l);
+        scale(_h_3l_nBjets     ,norm);
+        scale(_h_3l_nLjets     ,norm);
+        scale(_h_3l_nJets      ,norm);
+        scale(_h_3l_jet_1_pT   ,norm);
+        scale(_h_3l_jet_1_eta  ,norm);
+        scale(_h_3l_jet_2_pT   ,norm);
 
-        scale(_h_3l_nLep       ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_nEl        ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_nMu        ,crossSection()/_sumWeight_3l);
+        scale(_h_3l_nLep       ,norm);
+        scale(_h_3l_nEl        ,norm);
+        scale(_h_3l_nMu        ,norm);
         
-        scale(_h_3l_el_pT      ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_el_eta     ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_mu_pT      ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_mu_eta     ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_tau_pT     ,crossSection()/_sumWeight_3l);
-        scale(_h_3l_tau_eta    ,crossSection()/_sumWeight_3l); 
+        scale(_h_3l_el_pT      ,norm);
+        scale(_h_3l_el_eta     ,norm);
+        scale(_h_3l_mu_pT      ,norm);
+        scale(_h_3l_mu_eta     ,norm);
+        scale(_h_3l_tau_pT     ,norm);
+        scale(_h_3l_tau_eta    ,norm);
 
-        scale(_h_2l_1tau_nBjets     ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_nLjets     ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_nJets      ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_jet_1_pT   ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_jet_1_eta  ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_jet_2_pT   ,crossSection()/_sumWeight_2l1tau);
+        scale(_h_2l_1tau_nBjets     ,norm);
+        scale(_h_2l_1tau_nLjets     ,norm);
+        scale(_h_2l_1tau_nJets      ,norm);
+        scale(_h_2l_1tau_jet_1_pT   ,norm);
+        scale(_h_2l_1tau_jet_1_eta  ,norm);
+        scale(_h_2l_1tau_jet_2_pT   ,norm);
 
-        scale(_h_2l_1tau_nLep       ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_nEl        ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_nMu        ,crossSection()/_sumWeight_2l1tau);
+        scale(_h_2l_1tau_nLep       ,norm);
+        scale(_h_2l_1tau_nEl        ,norm);
+        scale(_h_2l_1tau_nMu        ,norm);
         
-        scale(_h_2l_1tau_el_pT      ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_el_eta     ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_mu_pT      ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_mu_eta     ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_tau_pT     ,crossSection()/_sumWeight_2l1tau);
-        scale(_h_2l_1tau_tau_eta    ,crossSection()/_sumWeight_2l1tau);
+        scale(_h_2l_1tau_el_pT      ,norm);
+        scale(_h_2l_1tau_el_eta     ,norm);
+        scale(_h_2l_1tau_mu_pT      ,norm);
+        scale(_h_2l_1tau_mu_eta     ,norm);
+        scale(_h_2l_1tau_tau_pT     ,norm);
+        scale(_h_2l_1tau_tau_eta    ,norm);
 
 
 
@@ -782,6 +782,14 @@ namespace Rivet {
 
     // @name Histogram data members
     //@{
+    //
+
+    Histo1DPtr _h_sumOfWeights;
+
+    Histo1DPtr _h_evntCounter,_h_2lee4j_evntCounter,_h_2lmumu4j_evntCounter,_h_2lemu4j_evntCounter;
+    Histo1DPtr _h_2lee5j_evntCounter,_h_2lmumu5j_evntCounter,_h_2lemu5j_evntCounter;
+    Histo1DPtr _h_3l_evntCounter,_h_2l1tau_evntCounter;
+
     Histo1DPtr _h_2lee4j_nBjets,_h_2lee4j_nLjets,_h_2lee4j_nJets;
     Histo1DPtr _h_2lee4j_jet_1_pT,_h_2lee4j_jet_1_eta, _h_2lee4j_jet_2_pT;
 
