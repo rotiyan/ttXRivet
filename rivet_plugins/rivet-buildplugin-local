@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+## -*- sh -*-
+## bin/rivet-buildplugin.  Generated from rivet-buildplugin.in by configure.
+
+## Print help
+PROG=$(basename $0)
+tmp=$(echo $* | egrep -- '--\<help\>|-\<h\>')
+if test $# -lt 1 || test -n "$tmp"; then
+    echo "$PROG: compilation helper for Rivet analysis plugins"
+    echo
+    echo "Usage: $PROG [<libname>] <source1> [<source2> [compiler_flags] ...]"
+    echo
+    echo "<libname> can be a path, provided the filename is of the form 'Rivet*.so'"
+    echo "If <libname> is not specified, the default name is 'RivetAnalysis.so'."
+    echo
+    echo "To make special build variations you can add appropriate compiler flags"
+    echo "to the arguments and these will be passed directly to the compiler. For"
+    echo "example, for a debug build of your plugin library, add '-g', and for a"
+    echo "32 bit build on a 64 bit system add '-m32'."
+    echo
+    echo "Options:"
+    echo "  -h | --help: display this help message"
+    echo "  --with-root: add ROOT link options (requires root-config on system)"
+    echo
+    echo "TODO:"
+    echo "  * is there a GCC option to parallelise the single-command compilation?"
+    test -n "$tmp"
+    exit $?
+fi
+
+## These variables need to exist
+## Note no use of $DESTDIR... we ignore it so that destdir can be used
+## for temp installs later copied to /
+prefix=/afs/.cern.ch/sw/lcg/external/MCGenerators_lcgcmt67b/rivet/2.2.0/x86_64-slc6-gcc47-opt
+exec_prefix=${prefix}
+datarootdir=${prefix}/share
+
+## Work out shared library build flags by platform
+shared_flags=
+SWVERS=$(which sw_vers 2> /dev/null)
+if test "$SWVERS" && test -x "$SWVERS"; then
+  ## Mac OS X
+  shared_flags="-undefined dynamic_lookup -bundle"
+else
+  ## Unix
+  shared_flags="-shared -fPIC"
+fi
+
+## Get Rivet system C++ compiler (fall back to $CXX and then g++ if needed)
+mycxx=g++
+rivetcxx=$(which "/cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.3.0/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/c++" 2> /dev/null)
+abscxx=$(which "$CXX" 2> /dev/null)
+if [[ -x "$rivetcxx" ]]; then
+    mycxx="/cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.3.0/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/c++"
+elif [[ -x "$abscxx" ]]; then
+    mycxx=$CXX
+fi
+
+## Get Rivet system C++ compiler flags
+mycxxflags=""
+if [[ -n " -pedantic -ansi -Wall -Wno-long-long -Wno-format -Werror=uninitialized -Werror=delete-non-virtual-dtor" ]]; then
+    mycxxflags=" -pedantic -ansi -Wall -Wno-long-long -Wno-format -Werror=uninitialized -Werror=delete-non-virtual-dtor"
+fi
+if [[ -n "-O2" ]]; then
+    mycxxflags="$mycxxflags -O2"
+fi
+
+## Get Rivet system C preprocessor flags (duplicating that in rivet-config.in)
+mycppflags=""
+prefix="/afs/.cern.ch/sw/lcg/external/MCGenerators_lcgcmt67b/rivet/2.2.0/x86_64-slc6-gcc47-opt"
+exec_prefix="${prefix}"
+irivet="${prefix}/include"
+test -n "$irivet" && mycppflags="$mycppflags -I${irivet}"
+ihepmc="/afs/.cern.ch/sw/lcg/external/HepMC/2.06.08/x86_64-slc6-gcc47-opt/include"
+test -n "$ihepmc" && mycppflags="$mycppflags -I${ihepmc}"
+iyoda="/afs/.cern.ch/sw/lcg/external/MCGenerators_lcgcmt67b/yoda/1.3.0/x86_64-slc6-gcc47-opt/include"
+test -n "$iyoda" && mycppflags="$mycppflags -I${iyoda}"
+ifastjet="/afs/.cern.ch/sw/lcg/external/fastjet/3.0.3/x86_64-slc6-gcc47-opt/include"
+test -n "$ifastjet" && mycppflags="$mycppflags -I${ifastjet}"
+igsl="/cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.3.0/sw/lcg/external/GSL/1.10/x86_64-slc6-gcc47-opt/include"
+test -n "$igsl" && mycppflags="$mycppflags -I${igsl}"
+iboost="-I/afs/.cern.ch/sw/lcg/external/Boost/1.53.0_python2.7/x86_64-slc6-gcc47-opt/include/boost-1_53"
+test -n "$iboost" && mycppflags="$mycppflags ${iboost}"
+
+
+## Get Rivet system linker flags (duplicating that in rivet-config.in)
+myldflags=""
+lrivet="${exec_prefix}/lib"
+test -n "$lrivet" && myldflags="$myldflags -L${lrivet}"
+lhepmc="/afs/.cern.ch/sw/lcg/external/HepMC/2.06.08/x86_64-slc6-gcc47-opt/lib"
+test -n "$lhepmc" && myldflags="$myldflags -L${lhepmc}"
+lyoda="/afs/.cern.ch/sw/lcg/external/MCGenerators_lcgcmt67b/yoda/1.3.0/x86_64-slc6-gcc47-opt/lib"
+test -n "$lyoda" && myldflags="$myldflags -L${lyoda}"
+lfastjet="-Wl,-rpath,/afs/.cern.ch/sw/lcg/external/fastjet/3.0.3/x86_64-slc6-gcc47-opt/lib -lm -L/afs/.cern.ch/sw/lcg/external/fastjet/3.0.3/x86_64-slc6-gcc47-opt/lib -lfastjettools -lfastjet -lfastjetplugins -lsiscone_spherical -lsiscone -L/afs/.cern.ch/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.7.2 -L/afs/.cern.ch/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc -L/afs/.cern.ch/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.7.2/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/afs/.cern.ch/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.7.2/../../.. -lgfortran -lm -lquadmath"
+test -n "$lfastjet" && myldflags="$myldflags ${lfastjet}"
+## Detect whether the linker accepts the --no-as-needed flag and prepend the linker flag with it if possible
+if (cd /tmp && echo -e 'int main() { return 0; }' > $$.cc; $mycxx -Wl,--no-as-needed $$.cc -o $$ 2> /dev/null); then
+  myldflags="-Wl,--no-as-needed $myldflags"
+fi
+
+
+## Link against ROOT if requested
+with_root=$(echo $* | egrep -- '--\<with-root\>')
+# echo $with_root
+tmp=${@//--with-root/}
+set $tmp
+
+
+## Get and check the library name
+libname=$1
+match1=$(basename "$libname" | egrep '^.*\.so')
+match2=$(basename "$libname" | egrep '^Rivet.*\.so')
+if test -n "$match1"; then
+    if test -z "$match2"; then
+        echo "Library name '$libname' does not have the required 'Rivet*.so' name pattern" 1>&2
+        exit 1
+    fi
+    ## If we're using the first arg as the library name, shift it off the positional list
+    shift
+else
+    echo "Using default library name 'RivetAnalysis.so'"
+    libname="RivetAnalysis.so"
+fi
+
+
+## Get the source files (and more flags)
+sources_and_flags="$@ -lRivet"
+if [[ -n $with_root ]]; then
+    root_flags=$(root-config --libs --cflags 2> /dev/null)
+    # echo $root_flags
+    sources_and_flags="$root_flags $sources_and_flags"
+fi
+
+## Build
+cmd="$mycxx -o \"$libname\" $shared_flags $mycppflags $mycxxflags $myldflags $sources_and_flags"
+echo $cmd
+eval $cmd
