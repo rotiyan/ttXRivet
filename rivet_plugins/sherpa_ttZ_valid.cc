@@ -167,7 +167,9 @@ namespace Rivet {
     void analyze(const Event& event) {
       const double weight = event.weight();
 
-      evnt_weight   = weight;
+      evnt_weight       = weight;
+      int event_number  = event.event_number();
+
     
       jet_pt->clear();
       jet_eta->clear();
