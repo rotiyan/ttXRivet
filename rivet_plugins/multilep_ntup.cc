@@ -224,7 +224,7 @@ namespace Rivet {
             {
               if (p.threeCharge()!=0) nProng++;
             }
-            if(nProng ==2 || nProng ==3)
+            if(nProng ==1 || nProng ==3)
             {
               tauVec.push_back(tau);
             }
