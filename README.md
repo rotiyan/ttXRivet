@@ -6,7 +6,13 @@ The current package does validation studies for ttbar + vector bosons. it produc
 converted to root format with `yoda2root`. 
 
 Follow the following chain to compile and run rivet
-asetup 19.2.3.9,here
+
+Setup the latest MCProd Cache: 
+
+```
+lsetup "asetup 19.2.5.33.1,MCProd,here" 
+```
+
 rivet-buildplugin RivetTTBAR_ANA.so TTBAR_ANA.cc
 (rivet-buildplugin is a script that links rivet libraries from afs. If you don't have afs, you should compile the .so with rivet libraries in appropriate cvmfs locations)
 Use and modify rivet_MC_jo.py accordingly and run the analysis.
