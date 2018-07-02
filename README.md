@@ -5,7 +5,7 @@ wchich is as close to what one might end up seeing in the detector.
 The current package does validation studies for ttbar + vector bosons. it produces output files wchich are in .yoda format which can be 
 converted to root format with `yoda2root`. 
 
-#Checking out package and setting up 
+#1 Checking out package and setting up 
 Setup the latest MCProd Cache: 
 
 ```
