@@ -1,12 +1,10 @@
 RIVET (Robust Independant Verification of Experiment and Theory) is a tool to validate montecarlo samples. 
-RIVET encapsulates the generator dependancies in the HepMC records behind a robust object oriented interface
-wchich is as close to what one might end up seeing in the detector. 
+RIVET encapsulates the generator dependancies in the HepMC records behind a robust object oriented interface. 
 
 The current package does validation studies for ttbar + vector bosons. it produces output files wchich are in .yoda format which can be 
 converted to root format with `yoda2root`. 
 
 # Checking out package and setting up 
-Setup the latest MCProd Cache: 
 
 ```
 git clone https://:@gitlab.cern.ch:8443/narayan/pmg-rivet.git
