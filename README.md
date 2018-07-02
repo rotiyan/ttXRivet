@@ -18,7 +18,7 @@ Navigate to the folder ``pmg-rivet`` and setup a latest MCProd cache
 ```
 lsetup "asetup 19.2.5.33.1,MCProd,here" 
 ```
-#2. Building the rivet-plugins
+# 1. Building the rivet-plugins
 
 The plugins are located in the rivet_plugins folder. ``cd rivet_plugins``
 
