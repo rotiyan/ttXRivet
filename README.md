@@ -35,7 +35,7 @@ The following procedure explains how to do a standalone analysis.
 Modify the ``ttll_jo.py`` script accordingly  and can be ran locally by running athena 
 
 ```
-athena -c 'xs=' rivet_MC_jo.py
+athena -c 'xs=' ttll_jo.py
 ```
 Here ``xs`` is the cross section of the sample under consideration (Used in the plugin internally for normalization)
 
