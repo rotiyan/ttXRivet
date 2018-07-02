@@ -5,7 +5,7 @@ wchich is as close to what one might end up seeing in the detector.
 The current package does validation studies for ttbar + vector bosons. it produces output files wchich are in .yoda format which can be 
 converted to root format with `yoda2root`. 
 
-#1 Checking out package and setting up 
+# 1. Checking out package and setting up 
 Setup the latest MCProd Cache: 
 
 ```
@@ -18,7 +18,7 @@ Navigate to the folder ``pmg-rivet`` and setup a latest MCProd cache
 ```
 lsetup "asetup 19.2.5.33.1,MCProd,here" 
 ```
-#Building the rivet-plugins
+#2. Building the rivet-plugins
 
 The plugins are located in the rivet_plugins folder. ``cd rivet_plugins``
 
@@ -27,8 +27,13 @@ To build the plugin do the following
 rivet-buildplugin RivetTTZ_analysis.so TTZ_analysis.cc
 ```
 
-
 (rivet-buildplugin is a script that links rivet libraries from afs. If you don't have afs, you should compile the .so with rivet libraries in appropriate cvmfs locations)
+
+#3. Running the analysis using the plugin 
+Copy the plugin to the ``rivet-ana`` folder. The plugin can be ran standalone as well as an option to the ``Generate_tf.py`` script. 
+
+The following procedure explains how to do a standalone analysis. 
+
 Use and modify rivet_MC_jo.py accordingly and run the analysis.
 athena -c 'xs=' rivet_MC_jo.py
 
