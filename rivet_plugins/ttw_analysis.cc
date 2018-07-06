@@ -111,6 +111,9 @@ namespace Rivet {
     /// Perform the per-event analysis
     void analyze(const Event& event) {
 
+      const double weight = event.weight();
+
+
       const MissingMomentum &met= applyProjection<MissingMomentum>(event,"MissingET");
       const double event_met    = met.vectorEt().mod()*GeV;
   
@@ -122,7 +125,6 @@ namespace Rivet {
 
       _h_nJets->fill(alljets.size(),weight);
 
-      const double weight = event.weight();
       MSG_INFO("#----------------Event--------------#");
 
       //DO PDG analysis
