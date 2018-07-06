@@ -128,7 +128,7 @@ namespace Rivet {
       MSG_INFO("#----------------Event--------------#");
 
       //DO PDG analysis
-      vector<HepMC::GenParticle*> genParticles = particles(event.genEvent());
+      vector<const HepMC::GenParticle*> genParticles = particles(event.genEvent());
       Particles wCands,bCands,topCands;
 
       foreach(const GenParticle *part, particles(event.genEvent()))
