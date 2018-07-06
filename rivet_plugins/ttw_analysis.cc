@@ -369,7 +369,7 @@ namespace Rivet {
     // Data members like post-cuts event weight counters go here
     Histo1DPtr _h_wPlus_MET,_h_wMinus_MET;
     Histo1DPtr _h_wPlus_HT,_h_wMinus_HT;
-    Histo1DPtr _h_wPlus_nJets,_h_wMinus_nJets;_h_nJets;
+    Histo1DPtr _h_wPlus_nJets,_h_wMinus_nJets,_h_nJets;
     Histo1DPtr _h_ttbar_pt;
     Histo1DPtr _h_t1_mass;
     Histo1DPtr _h_t2_mass;
