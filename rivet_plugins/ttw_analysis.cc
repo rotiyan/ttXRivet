@@ -50,6 +50,7 @@ namespace Rivet {
         _h_wMinus_HT= bookHisto1D("wMinus_HT",100,50,1050);
         _h_wPlus_nJets = bookHisto1D("wPlus_nJets",11,-0.5,10.5);
         _h_wMinus_nJets= bookHisto1D("wMinus_nJets",11,-0.5,10.5);
+        _h_nJets    = bookHisto1D("event_nJets",11,-0.5,10.5);
         _h_ttbar_pt = bookHisto1D("ttbar_pt",150,130,430);
         _h_t1_mass  = bookHisto1D("t1_mass",150,130,430);
         _h_t2_mass  = bookHisto1D("t2_mass",150,130,430);
@@ -118,6 +119,8 @@ namespace Rivet {
       const Jets alljets        = jetProj.jetsByPt(25*GeV);
       double event_ht           = 0;
       foreach(const Jet &j, alljets){ event_ht += j.pT()*GeV;}
+
+      _h_nJets->fill(alljets.size(),weight);
 
       const double weight = event.weight();
       MSG_INFO("#----------------Event--------------#");
@@ -366,7 +369,7 @@ namespace Rivet {
     // Data members like post-cuts event weight counters go here
     Histo1DPtr _h_wPlus_MET,_h_wMinus_MET;
     Histo1DPtr _h_wPlus_HT,_h_wMinus_HT;
-    Histo1DPtr _h_wPlus_nJets,_h_wMinus_nJets;
+    Histo1DPtr _h_wPlus_nJets,_h_wMinus_nJets;_h_nJets;
     Histo1DPtr _h_ttbar_pt;
     Histo1DPtr _h_t1_mass;
     Histo1DPtr _h_t2_mass;
