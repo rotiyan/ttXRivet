@@ -16,8 +16,7 @@ namespace Rivet
     class TTZ_analysis : public Analysis
     {
         public:
-            TTZ_analysis(): Analysis("TTZ_analysis")
-            {}
+            TTZ_analysis(): Analysis("TTZ_analysis"){}
 
             void init()
             {
@@ -61,7 +60,7 @@ namespace Rivet
                 _h_event_HT     = bookHisto1D("event_HT",200,20,100);
                 _h_event_nEl    = bookHisto1D("event_nEl",20,-0.5,19.5);
                 _h_event_nMu    = bookHisto1D("event_nMu",20,-0.5,19.5);
-                
+
                 _h_diEl_mass    = bookHisto1D("diEl_mass",240,0,120);
                 _h_diEl_pt      = bookHisto1D("diEl_pt",200,10,210);
                 _h_diEl_eta     = bookHisto1D("diEl_eta",100,-4,4);
@@ -97,7 +96,7 @@ namespace Rivet
 
             void analyze(const Event & event)
             {
-                const double weight = event.weight();
+                const double weight       = event.weight();
 
                 const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
                 const Particles electrons = applyProjection<IdentifiedFinalState>(event,"EFS").particles();
@@ -119,7 +118,7 @@ namespace Rivet
                 const FastJets & jetpro = applyProjection<FastJets>(event, "Jets");
                 const Jets alljets      = jetpro.jetsByPt(20*GeV);
 
-               Particles cand_e;
+                Particles cand_e;
                 //Discard two electrons within R=0.1
                 std::vector<bool> vetoed(electrons.size(),false);
                 for(size_t i =0;i<electrons.size(); ++i)
@@ -207,9 +206,12 @@ namespace Rivet
                     if(ptInCone/mu.pT() <0.12) cand3_mu.push_back(mu);
                 }
 
-                //Select same sign opposite sign pairs
+                //Select same flavour opposite sign pairs
                 Particles recon_e,recon_mu;
                 std::vector<FourMomentum> diEl_FourMom,diMu_FourMom;
+
+                if (cand3_e.size() > 2 ) vetoEvent;
+                if (cand3_mu.size()> 2 ) vetoEvent;
 
                 for(size_t i =0;i<cand3_e.size(); ++i)
                 {
@@ -238,7 +240,7 @@ namespace Rivet
                 {
                     if(1<vec.mass()/GeV && 120>vec.mass()/GeV)
                     {
-                        MSG_INFO("diEl Madd diff:"<< fabs(vec.mass()-targetMass));
+                        MSG_INFO("diEl Mass diff:"<< fabs(vec.mass()-targetMass));
                         if(fabs(vec.mass()-targetMass) < zeeCand.mass()-targetMass)
                         {
                             const FourMomentum myVec = vec;
@@ -254,7 +256,7 @@ namespace Rivet
                     _h_diEl_eta->fill(zeeCand.eta(),weight);
                     _h_diEl_phi->fill(zeeCand.phi()/weight);
                 }
-                
+
                 FourMomentum zmumuCand(0.,0.,0.,0.);
                 foreach(const FourMomentum &vec, diMu_FourMom)
                 {
@@ -287,7 +289,7 @@ namespace Rivet
                 //LoopOver electrons and muons to find the Wlep candidate
                 FourMomentum Wel(10*sqrtS(),0.,0.,0.);
                 FourMomentum Wmu(10*sqrtS(),0.,0.,0.);
-                
+
                 foreach(const Particle &nu,neutrinos)
                 {
                     foreach(Particle &el,cand3_e)
@@ -311,7 +313,7 @@ namespace Rivet
                 _h_WLep_eta->fill(Wmu.eta(),weight);
 
                 //Do B-jets..
-                
+
                 //Get b-hadrons
                 const Particles bhadrons = sortByPt(applyProjection<HeavyHadrons>(event,"BCHadrons").bHadrons());
 
@@ -350,7 +352,7 @@ namespace Rivet
                 if(bjets.size() < 2)
                 {
                     MSG_INFO("#bjets < 2");
-                   vetoEvent;
+                    vetoEvent;
 
                 }
                 if(ljets.size()<2)
@@ -405,7 +407,7 @@ namespace Rivet
                 scale(_h_event_HT,norm);
                 scale(_h_event_nEl,norm);
                 scale(_h_event_nMu,norm);
-            
+
                 scale(_h_diEl_mass,norm);
                 scale(_h_diEl_pt,norm);
                 scale(_h_diEl_eta,norm);
@@ -435,7 +437,7 @@ namespace Rivet
                 scale(_h_top_dR,norm);
                 scale(_h_top_dEta,norm);
                 scale(_h_top_dPhi,norm);
-                
+
             }
 
         private:
@@ -444,7 +446,7 @@ namespace Rivet
             Histo1DPtr _h_event_HT;
             Histo1DPtr _h_event_nEl;
             Histo1DPtr _h_event_nMu;
-            
+
             Histo1DPtr _h_diEl_mass;
             Histo1DPtr _h_diEl_pt;
             Histo1DPtr _h_diEl_eta;

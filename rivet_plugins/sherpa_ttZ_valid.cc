@@ -168,7 +168,7 @@ namespace Rivet {
       const double weight = event.weight();
 
       evnt_weight       = weight;
-      int event_number  = event.event_number();
+      //int event_number  = event.event_number();
 
     
       jet_pt->clear();
