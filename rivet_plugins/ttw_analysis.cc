@@ -299,14 +299,6 @@ namespace Rivet {
       }
       _h_matchedjets_N->fill(_lightjetsMatchedToLightQ.size(),weight);
 
-    
-      MSG_INFO("WCandSize: "<<wCands.size() );
-      MSG_INFO("wBosonsSize: "<<wBosons.size());
-      MSG_INFO("bQuarksSize: "<<bQuarks.size());
-      MSG_INFO("wBosonsMESize" <<wBosonsME.size());
-      MSG_INFO("LepFromWTOP" <<LepfromWTop.size());
-      MSG_INFO("LightQuarkfromWTop" <<LightQuarkfromWTop.size());
-
       if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1 && (LepfromWTop.size() >=1 && LightQuarkfromWTop.size() >=2 ) )
       {
           MSG_INFO("WCANDS size: "<< wCands.size());
