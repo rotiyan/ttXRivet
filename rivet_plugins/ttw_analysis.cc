@@ -174,6 +174,7 @@ namespace Rivet {
       
       Particles wBosons, wBosonsME, topQuarks, bQuarks, LepfromWTop, LightQuarkfromWTop;
 
+
       foreach (const Particle &W, wCands)
       {
           bool topToBWFound = false;
@@ -207,7 +208,7 @@ namespace Rivet {
           }
       }
 
-
+      Particles W_enu, W_munu,W_taunu;
       foreach (const Particle &W, wCands)
       {
           bool wlepDecay = false;
@@ -237,19 +238,29 @@ namespace Rivet {
           for(GenVertex::particles_out_const_iterator witer = wEndVert->particles_out_const_begin(); witer != wEndVert->particles_out_const_end(); ++witer)
           {
               int wchPdg =  abs((*witer)->pdg_id());
-              if(wchPdg ==11 || wchPdg ==12 || wchPdg ==13 || wchPdg ==14) 
+              if (wchPdg ==11 || wchPdg ==12 || wchPdg ==13 || wchPdg ==14 || wchPdg ==15 || wchPdg ==16)
               {
                   wlepDecay = true;
-		         if (!noTopParent) 
-                 {
-                    LepfromWTop.push_back(*witer);//MARIA (two entries per event)
-                    break; //Why break ?
-                 }
+              
+                  if (!noTopParent)
+                  {
+                      if(wchPdg ==11 || wchPdg ==12)
+                      {
+                          W_enu.push_back(*witer);
+                      }
+                      if(wchPdg ==13 || wchPdg ==14) 
+                      {
+                          W_munu.push_back(*witer);
+                      }
+                      if(wchPdg ==15 || wchPdg ==16)
+                      {
+                          W_taunu.push_back(*witer);
+                      }
+                  }
               }
 	          else if(wchPdg ==1 || wchPdg ==2 || wchPdg ==3 || wchPdg ==4) { //MARIA (two entries per event)
                   whadDecay = true;
 		          LightQuarkfromWTop.push_back(*witer);//will match with particle-level jets
-                  break;
               }
           }
 
@@ -260,6 +271,14 @@ namespace Rivet {
           }
 	  
       }//end Wcand loop
+
+      //This has a potential problem that we are not caring about dileptonic tt-bar system.
+      MSG_INFO ("Found Electron or electron neutrino: " << W_enu.size() );
+      if (W_enu.size() ==2) LepfromWTop = W_enu;
+      if (W_munu.size() ==2 ) LepfromWTop = W_munu;
+      if (W_taunu.size() ==2 ) LepfromWTop = W_taunu;
+
+
     
       sortByPt(topQuarks);
       sortByPt(bQuarks);
@@ -299,7 +318,7 @@ namespace Rivet {
       }
       _h_matchedjets_N->fill(_lightjetsMatchedToLightQ.size(),weight);
 
-      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1 && (LepfromWTop.size() >=1 && LightQuarkfromWTop.size() >=2 ) )
+      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1 )//&&  LepfromWTop.size() >=1)// && LightQuarkfromWTop.size() >=2)
       {
           MSG_INFO("WCANDS size: "<< wCands.size());
           MSG_INFO("WBOSONSME Size: "<<wBosonsME.size());
@@ -310,7 +329,7 @@ namespace Rivet {
 	      MSG_INFO("LightQuarkfromWTop Size: "<<LightQuarkfromWTop.size());
       }
 
-      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1 && (LepfromWTop.size() >=1 && LightQuarkfromWTop.size() >=2) )
+      if(topQuarks.size()==2 && wBosons.size()==2 && bQuarks.size()==2 && wBosonsME.size()==1 ) // && (LepfromWTop.size() >=2 && LightQuarkfromWTop.size() >=2) )
       {
           _h_top_dEta->fill(deltaEta(topQuarks[0],topQuarks[1]),weight);
           _h_top_dPhi->fill(deltaPhi(topQuarks[0],topQuarks[1]),weight);
@@ -350,7 +369,7 @@ namespace Rivet {
           _h_w2_phi->fill(wBosons[1].momentum().phi(),weight);
 
 	  //MARIA
-          _h_lep_dEta->fill(deltaEta(LepfromWTop[0],LepfromWTop[1]),weight);
+         /* _h_lep_dEta->fill(deltaEta(LepfromWTop[0],LepfromWTop[1]),weight);
           _h_lep_dPhi->fill(deltaPhi(LepfromWTop[0],LepfromWTop[1]),weight);
           _h_lep_dR->fill(deltaR(LepfromWTop[0],LepfromWTop[1]),weight);
           _h_lep1_mass->fill(LepfromWTop[0].momentum().mass()*GeV,weight);
@@ -373,7 +392,7 @@ namespace Rivet {
           _h_lightq2_mass->fill(LightQuarkfromWTop[1].momentum().mass()*GeV,weight);
           _h_lightq2_pt->fill(LightQuarkfromWTop[1].momentum().perp()*GeV,weight);
           _h_lightq2_eta->fill(LightQuarkfromWTop[1].momentum().eta(),weight);
-          _h_lightq2_phi->fill(LightQuarkfromWTop[1].momentum().phi(),weight);
+          _h_lightq2_phi->fill(LightQuarkfromWTop[1].momentum().phi(),weight);*/
 
 
           if(wBosonsME[0].genParticle()->pdg_id()==24)
