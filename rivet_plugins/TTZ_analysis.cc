@@ -295,7 +295,7 @@ namespace Rivet
                     foreach(Particle &el,cand3_e)
                     {
                         const FourMomentum WCand = el.momentum() + nu.momentum();
-                        if(fabs(WCand.mass()-80.4*GeV) < Wel.mass()-8.04*GeV) Wel = WCand;
+                        if(fabs(WCand.mass()-80.4*GeV) < Wel.mass()-80.04*GeV) Wel = WCand;
                     }
                     foreach(Particle &mu,cand3_mu)
                     {
