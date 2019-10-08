@@ -1,4 +1,5 @@
 // -*- C++ -*-
+#include "Root/TH1F.h"
 #include "Rivet/Analysis.hh"
 #include "Rivet/Projections/ZFinder.hh"
 #include "Rivet/Projections/ChargedLeptons.hh"
@@ -46,6 +47,8 @@ namespace Rivet {
 
         addProjection(FastJets(FinalState(-2.5,2.5,25*GeV),FastJets::ANTIKT,0.4),"Jets");
         addProjection(MissingMomentum(FinalState(-4,4,0*GeV)),"MissingET");
+
+        hist_test = new TH1F("hist_test","hist test",100,0,100);
 
 
         _h_wPlus_MET= bookHisto1D("wPlus_MET",100,50,450);
@@ -590,6 +593,8 @@ namespace Rivet {
     Histo1DPtr _h_wMinusME_pt;
     Histo1DPtr _h_wMinusME_eta;
     Histo1DPtr _h_wMinusME_phi;
+
+    TH1F* hist_test;
 
   };
 

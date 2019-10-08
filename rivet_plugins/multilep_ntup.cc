@@ -159,6 +159,14 @@ namespace Rivet {
       _tree->Branch("tau_e","std::vector<float>",&tau_e);
       _tree->Branch("tau_charge","std::vector<int>",&tau_charge);
 
+      _tree->Branch("is_hww",&is_hww);
+      _tree->Branch("is_hbb",&is_hbb);
+      _tree->Branch("is_hcc",&is_hcc);
+      _tree->Branch("is_htt",&is_htt);
+      _tree->Branch("is_hgg",&is_hgg);
+      _tree->Branch("is_hgamgam",&is_hgamgam);
+      _tree->Branch("is_hzz",&is_hzz);
+
     }
 
 
@@ -196,6 +204,39 @@ namespace Rivet {
       // Use the "LFS" projection to require at least one hard charged
       // lepton. This is an experimental signature for the leptonically decaying
       // W. This helps to reduce pure QCD backgrounds.
+
+      //Get the truth projection
+
+      is_hww    = false;
+      is_hbb    = false;
+      is_hcc    = false;
+      is_htt    = false;
+      is_hgg    = false;
+      is_hgamgam= false;
+      is_hzz    = false;
+      foreach(const GenParticle *part, particles(event.genEvent()))
+      {
+          if(part->momentum().perp()*GeV >10 && fabs(part->momentum().eta()) <2.5)
+          {
+              //Select H-boson
+              if(fabs(part->pdg_id()) == 25)
+              {
+                  GenVertex *hDecayVert =  part->end_vertex();
+                  for(GenVertex::particles_out_const_iterator vIter = hDecayVert->particles_out_const_begin();vIter != wVert->particles_out_const_end(); ++vIter)
+                  {
+                      GenParticle *hDaughter = (*vIter);
+                      if (fabs(hDaughter->pdg_id()) == 24) is_hww = true;
+                      if (fabs(hDaughter->pdg_id()) == 5) is_hbb  = true;
+                      if (fabs(hDaughter->pdg_id()) == 4 ) is_hcc = true;
+                      if (fabs(hDaughter->pdg_id()) == 15) is_htt = true;
+                      if (fabs(hDaughter->pdg_id()) == 21) is_hgg = true;
+                      if (fabs(hDaughter->pdg_id()) == 22) is_hgamgam = true;
+                      if (fabs(hDaughter->pdg_id()) == 23) is_hzz = true;
+                  }
+              }
+          }
+      }
+ 
       
       const ChargedLeptons& lfs     = applyProjection<ChargedLeptons>(event, "LFS");
       
@@ -245,7 +286,7 @@ namespace Rivet {
       muVec = sortByPt(muVec);
       tauVec= sortByPt(tauVec);
       
-      if(alljets.size() >=3)
+      if(alljets.size() >=3 && (elVec.size() + muVec.size()) >=2 )
       {
          foreach (const Particle &el, elVec)
          {
@@ -282,8 +323,8 @@ namespace Rivet {
              jet_e->push_back(jet.E()/GeV);
              jet_label->push_back( (jet.bTagged()) ? 4 : 1 );
          }
-      }
       _tree->Fill();
+      }
   }
 
 
@@ -331,6 +372,15 @@ namespace Rivet {
     std::vector<float>* tau_phi;
     std::vector<float>* tau_e;
     std::vector<int>*   tau_charge;
+
+    bool is_hww;
+    bool is_hbb;
+    bool is_hcc;
+    bool is_htt;
+    bool is_hgg;
+    bool is_hgamgam;
+    bool is_hzz;
+
 
     //
     //@}

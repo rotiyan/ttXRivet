@@ -2,10 +2,12 @@
 ## -*- sh -*-
 ## bin/rivet-buildplugin.  Generated from rivet-buildplugin.in by configure.
 
-## Print help
+## Get program name
 PROG=$(basename $0)
-tmp=$(echo $* | egrep -- '--\<help\>|-\<h\>')
-if test $# -lt 1 || test -n "$tmp"; then
+
+## Print help message
+tmp=$(echo "$*" | egrep -- '--\<help\>|-\<h\>')
+if test -n "$tmp"; then # || test $# -lt 1
     echo "$PROG: compilation helper for Rivet analysis plugins"
     echo
     echo "Usage: $PROG [<libname>] <source1> [<source2> [compiler_flags] ...]"
@@ -21,6 +23,7 @@ if test $# -lt 1 || test -n "$tmp"; then
     echo "Options:"
     echo "  -h | --help: display this help message"
     echo "  --with-root: add ROOT link options (requires root-config on system)"
+    echo "  --cmd|--dry-run: just print the generated compiler command, do not execute"
     echo
     echo "TODO:"
     echo "  * is there a GCC option to parallelise the single-command compilation?"
@@ -31,7 +34,7 @@ fi
 ## These variables need to exist
 ## Note no use of $DESTDIR... we ignore it so that destdir can be used
 ## for temp installs later copied to /
-prefix=/cvmfs/sft.cern.ch/lcg/external/MCGenerators_lcgcmt67b/rivet/2.2.0/x86_64-slc6-gcc47-opt
+prefix=/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/rivet/2.5.2-0a722/x86_64-slc6-gcc49-opt
 exec_prefix=${prefix}
 datarootdir=${prefix}/share
 
@@ -48,18 +51,18 @@ fi
 
 ## Get Rivet system C++ compiler (fall back to $CXX and then g++ if needed)
 mycxx=g++
-rivetcxx=$(which "/cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.3.0/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/c++" 2> /dev/null)
+rivetcxx=$(which $(echo "/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9/x86_64-slc6/bin/g++ -std=c++11" | awk '{print $1}') 2> /dev/null)
 abscxx=$(which "$CXX" 2> /dev/null)
 if [[ -x "$rivetcxx" ]]; then
-    mycxx="/cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.3.0/sw/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/c++"
+    mycxx="/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9/x86_64-slc6/bin/g++ -std=c++11"
 elif [[ -x "$abscxx" ]]; then
     mycxx=$CXX
 fi
 
 ## Get Rivet system C++ compiler flags
 mycxxflags=""
-if [[ -n " -pedantic -ansi -Wall -Wno-long-long -Wno-format -Werror=uninitialized -Werror=delete-non-virtual-dtor" ]]; then
-    mycxxflags=" -pedantic -ansi -Wall -Wno-long-long -Wno-format -Werror=uninitialized -Werror=delete-non-virtual-dtor"
+if [[ -n " -pedantic -Wall -Wno-long-long -Wno-format -Werror=uninitialized -Werror=delete-non-virtual-dtor" ]]; then
+    mycxxflags=" -pedantic -Wall -Wno-long-long -Wno-format -Werror=uninitialized -Werror=delete-non-virtual-dtor"
 fi
 if [[ -n "-O2" ]]; then
     mycxxflags="$mycxxflags -O2"
@@ -67,31 +70,31 @@ fi
 
 ## Get Rivet system C preprocessor flags (duplicating that in rivet-config.in)
 mycppflags=""
-prefix="/cvmfs/sft.cern.ch/lcg/external/MCGenerators_lcgcmt67b/rivet/2.2.0/x86_64-slc6-gcc47-opt"
+prefix="/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/rivet/2.5.2-0a722/x86_64-slc6-gcc49-opt"
 exec_prefix="${prefix}"
 irivet="${prefix}/include"
 test -n "$irivet" && mycppflags="$mycppflags -I${irivet}"
-ihepmc="/cvmfs/sft.cern.ch/lcg/external/HepMC/2.06.08/x86_64-slc6-gcc47-opt/include"
+ihepmc="/cvmfs/sft.cern.ch/lcg/releases/HepMC/2.06.09-0a23a/x86_64-slc6-gcc49-opt/include"
 test -n "$ihepmc" && mycppflags="$mycppflags -I${ihepmc}"
-iyoda="/cvmfs/sft.cern.ch/lcg/external/MCGenerators_lcgcmt67b/yoda/1.3.0/x86_64-slc6-gcc47-opt/include"
+iyoda="/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/yoda/1.6.7-52655/x86_64-slc6-gcc49-opt/include"
 test -n "$iyoda" && mycppflags="$mycppflags -I${iyoda}"
-ifastjet="/cvmfs/sft.cern.ch/lcg/external/fastjet/3.0.3/x86_64-slc6-gcc47-opt/include"
+ifastjet="/cvmfs/sft.cern.ch/lcg/releases/fastjet/3.2.0-bb0d1/x86_64-slc6-gcc49-opt/include"
 test -n "$ifastjet" && mycppflags="$mycppflags -I${ifastjet}"
-igsl="/cvmfs/atlas.cern.ch/repo/sw/software/x86_64-slc6-gcc47-opt/19.3.0/sw/lcg/external/GSL/1.10/x86_64-slc6-gcc47-opt/include"
+igsl="/cvmfs/sft.cern.ch/lcg/releases/GSL/1.10-a0511/x86_64-slc6-gcc49-opt/include"
 test -n "$igsl" && mycppflags="$mycppflags -I${igsl}"
-iboost="-I/cvmfs/sft.cern.ch/lcg/external/Boost/1.53.0_python2.7/x86_64-slc6-gcc47-opt/include/boost-1_53"
-test -n "$iboost" && mycppflags="$mycppflags ${iboost}"
+# iboost="@BOOST_CPPFLAGS@"
+# test -n "$iboost" && mycppflags="$mycppflags ${iboost}"
 
 
 ## Get Rivet system linker flags (duplicating that in rivet-config.in)
 myldflags=""
 lrivet="${exec_prefix}/lib"
 test -n "$lrivet" && myldflags="$myldflags -L${lrivet}"
-lhepmc="/cvmfs/sft.cern.ch/lcg/external/HepMC/2.06.08/x86_64-slc6-gcc47-opt/lib"
+lhepmc="/cvmfs/sft.cern.ch/lcg/releases/HepMC/2.06.09-0a23a/x86_64-slc6-gcc49-opt/lib"
 test -n "$lhepmc" && myldflags="$myldflags -L${lhepmc}"
-lyoda="/cvmfs/sft.cern.ch/lcg/external/MCGenerators_lcgcmt67b/yoda/1.3.0/x86_64-slc6-gcc47-opt/lib"
+lyoda="/cvmfs/sft.cern.ch/lcg/releases/MCGenerators/yoda/1.6.7-52655/x86_64-slc6-gcc49-opt/lib"
 test -n "$lyoda" && myldflags="$myldflags -L${lyoda}"
-lfastjet="-Wl,-rpath,/cvmfs/sft.cern.ch/lcg/external/fastjet/3.0.3/x86_64-slc6-gcc47-opt/lib -lm -L/cvmfs/sft.cern.ch/lcg/external/fastjet/3.0.3/x86_64-slc6-gcc47-opt/lib -lfastjettools -lfastjet -lfastjetplugins -lsiscone_spherical -lsiscone -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.7.2 -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.7.2/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.7.2/x86_64-slc6-gcc47-opt/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.7.2/../../.. -lgfortran -lm -lquadmath"
+lfastjet="-Wl,-rpath,/cvmfs/sft.cern.ch/lcg/releases/fastjet/3.2.0-bb0d1/x86_64-slc6-gcc49-opt/lib -lm -L/afs/.cern.ch/sw/lcg/releases/fastjet/3.2.0-bb0d1/x86_64-slc6-gcc49-opt/lib -lfastjettools -lfastjet -lfastjetplugins -lsiscone_spherical -lsiscone -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-slc6/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.9.3 -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-slc6/bin/../lib/gcc -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-slc6/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.9.3/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/cvmfs/sft.cern.ch/lcg/contrib/gcc/4.9.3/x86_64-slc6/bin/../lib/gcc/x86_64-unknown-linux-gnu/4.9.3/../../.. -lgfortran -lm -lquadmath"
 test -n "$lfastjet" && myldflags="$myldflags ${lfastjet}"
 ## Detect whether the linker accepts the --no-as-needed flag and prepend the linker flag with it if possible
 if (cd /tmp && echo -e 'int main() { return 0; }' > $$.cc; $mycxx -Wl,--no-as-needed $$.cc -o $$ 2> /dev/null); then
@@ -100,11 +103,17 @@ fi
 
 
 ## Link against ROOT if requested
-with_root=$(echo $* | egrep -- '--\<with-root\>')
+with_root=$(echo "$*" | egrep -- '--\<with-root\>')
 # echo $with_root
-tmp=${@//--with-root/}
-set $tmp
+tmp=$(echo "$*" | sed -e 's/--with-root//g')
 
+## Just show the compiler command rather than execute it, if requested
+only_show=$(echo "$tmp" | egrep -- '--\<cmd\>|--\<dry-run\>')
+# echo $only_show
+tmp=$(echo "$tmp" | sed -e 's/--cmd//g' -e 's/--dry-run//g')
+
+## Reset positional params now that flags have been removed
+set -- $tmp #< NB. protection against empty $tmp arg!!
 
 ## Get and check the library name
 libname=$1
@@ -118,13 +127,15 @@ if test -n "$match1"; then
     ## If we're using the first arg as the library name, shift it off the positional list
     shift
 else
-    echo "Using default library name 'RivetAnalysis.so'"
+    if [[ -z $only_show ]]; then
+        echo "Using default library name 'RivetAnalysis.so'"
+    fi
     libname="RivetAnalysis.so"
 fi
 
 
 ## Get the source files (and more flags)
-sources_and_flags="$@ -lRivet"
+sources_and_flags="$* -lRivet"
 if [[ -n $with_root ]]; then
     root_flags=$(root-config --libs --cflags 2> /dev/null)
     # echo $root_flags
@@ -134,4 +145,6 @@ fi
 ## Build
 cmd="$mycxx -o \"$libname\" $shared_flags $mycppflags $mycxxflags $myldflags $sources_and_flags"
 echo $cmd
-eval $cmd
+if [[ -z $only_show ]]; then
+    eval $cmd
+fi

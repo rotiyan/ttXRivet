@@ -13,7 +13,8 @@ if os.path.exists("input.txt"):
         svcMgr.EventSelector.InputCollections = [x.strip("\n") for x in f.read().split(",")]
 
 else:
-    svcMgr.EventSelector.InputCollections=['/afs/cern.ch/work/n/narayan/mcProd/sherpa/pmg-rivet/rivet_plugins/ttW_madgraph/EVNT.12071733._000735.pool.root.1']
+    svcMgr.EventSelector.InputCollections=['/eos/user/n/narayan/ttV/ttW/sherpa225_ttw.EVNT.pool.root']
+
 #svcMgr.EventSelector.InputCollections= glob("/afs/cern.ch/user/n/narayan/work/mcProd/sherpa/pmg-rivet/rivet_plugins/user.narayan.ttZ_Sherpa225_NLO_180627_EXT1/*")
 
 #print sys.argv[1]
@@ -29,7 +30,8 @@ import os
 rivet = Rivet_i()
 rivet.AnalysisPath = os.environ['PWD']
 
-rivet.Analyses +=["ttw_analysis"]
+#rivet.Analyses +=["ttW_revised"]
+rivet.Analyses +=['ttw_analysis']
 rivet.RunName = ""
 rivet.HistoFile = "ttw_analysis"
 rivet.CrossSection = xs # xs to be read from athena or pathena commandline

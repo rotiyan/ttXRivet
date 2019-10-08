@@ -61,8 +61,12 @@ namespace Rivet {
      _h_qq_jet_2_pt =   bookHisto1D("qq_jet_2_pt",100,20,410);
      _h_qq_bjet2_pt =   bookHisto1D("qq_bjet2_pt",100,20,410);
      _h_nn_zmass    =   bookHisto1D("nn_zmass",210,5,115);
+     _h_nn_zpt      =   bookHisto1D("nn_zpt",200,0,1000);
+     _h_nn_zeta     =   bookHisto1D("nn_zeta",10,-5,5);
      _h_nn_t_mass   =   bookHisto1D("nn_t_mass",150,130,430);
      _h_qq_zmass    =   bookHisto1D("qq_zmass",210,5,115);
+     _h_qq_zpt      =   bookHisto1D("qq_zpt",200,0,1000);
+     _h_qq_zeta     =   bookHisto1D("qq_zeta",10,-5,5);
      _h_qq_t_mass   =   bookHisto1D("qq_t_mass",150,130,430);
 
     }
@@ -76,7 +80,7 @@ namespace Rivet {
       double _weight = event.weight();
       double _met, _ht=0,_njet,_jet1_pt,_jet2_pt;
       double _bjet1_pt,_bjet2_pt;
-      double _zmass=0,_t_mass;
+      double _zmass=0,_zpt=0,_zeta=0,_t_mass=0;
 
       const GenEvent& ev = *(event.genEvent());
 
@@ -97,6 +101,8 @@ namespace Rivet {
       {
           neutrinoZevent= true;
           _zmass = znunuFinder.bosons()[0].momentum().mass()/GeV;
+          _zpt   = znunuFinder.bosons()[0].momentum().perp()/GeV;
+          _zeta  = znunuFinder.bosons()[0].momentum().eta();
       }
  
       if(neutrinoZevent)
@@ -178,10 +184,14 @@ namespace Rivet {
               }
           }
           float Zmass = (zjet1.momentum() + zjet2.momentum()).mass()/GeV;
+          float Zpt   = (zjet1.momentum() + zjet2.momentum()).perp()/GeV;
+          float Zeta  = (zjet1.momentum() + zjet2.momentum()).eta();
           if(Zmass > 60 && Zmass < 120)
           {
               hadronicZevent= true;
               _zmass = Zmass;
+              _zpt   = Zpt;
+              _zeta  = Zeta;
               foreach (const Jet &myjet, ljets)
               {
                   if(myjet.pT() !=zjet1.pT() || myjet.pT() != zjet2.pT())
@@ -249,6 +259,8 @@ namespace Rivet {
           _h_nn_jet_2_pt->fill(_jet2_pt,_weight);
           _h_nn_bjet2_pt->fill(_bjet2_pt,_weight);
           _h_nn_zmass->fill(_zmass,_weight);
+          _h_nn_zpt->fill(_zpt,_weight);
+          _h_nn_zeta->fill(_zeta,_weight);
           _h_nn_t_mass->fill(_t_mass,_weight);
       }
       if(hadronicZevent)
@@ -261,6 +273,8 @@ namespace Rivet {
           _h_qq_jet_2_pt->fill(_jet2_pt,_weight);
           _h_qq_bjet2_pt->fill(_bjet2_pt,_weight);
           _h_qq_zmass->fill(_zmass,_weight);
+          _h_qq_zpt->fill(_zpt,_weight);
+          _h_qq_zeta->fill(_zeta,_weight);
           _h_qq_t_mass->fill(_t_mass,_weight);
       }
     }
@@ -280,6 +294,8 @@ namespace Rivet {
         scale(_h_nn_bjet1_pt,norm);
         scale(_h_nn_bjet2_pt,norm);
         scale(_h_nn_zmass,norm);
+        scale(_h_nn_zpt,norm);
+        scale(_h_nn_zeta,norm);
         scale(_h_nn_t_mass,norm);
  
         scale(_h_qq_met,norm);
@@ -290,6 +306,8 @@ namespace Rivet {
         scale(_h_qq_bjet1_pt,norm);
         scale(_h_qq_bjet2_pt,norm);
         scale(_h_qq_zmass,norm);
+        scale(_h_qq_zpt,norm);
+        scale(_h_qq_zeta,norm);
         scale(_h_qq_t_mass,norm);
 
 
@@ -302,8 +320,8 @@ namespace Rivet {
     Histo1DPtr _h_qq_met,_h_qq_ht;
     Histo1DPtr _h_nn_njet,_h_nn_jet_1_pt,_h_nn_jet_2_pt,_h_nn_bjet1_pt,_h_nn_bjet2_pt;
     Histo1DPtr _h_qq_njet,_h_qq_jet_1_pt,_h_qq_jet_2_pt,_h_qq_bjet1_pt,_h_qq_bjet2_pt;
-    Histo1DPtr _h_nn_zmass,_h_nn_t_mass;
-    Histo1DPtr _h_qq_zmass,_h_qq_t_mass;
+    Histo1DPtr _h_nn_zmass,_h_nn_t_mass,_h_qq_zmass,_h_qq_t_mass;
+    Histo1DPtr _h_nn_zpt,_h_nn_zeta,_h_qq_zpt,_h_qq_zeta;
 
   };
 
