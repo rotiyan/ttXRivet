@@ -14,7 +14,7 @@ Navigate to the folder ``pmg-rivet`` and setup a latest MCProd cache
 
 
 ```
-lsetup "asetup 19.2.5.33.1,MCProd,here" 
+asetup 21.6.3,AthGeneration,here
 ```
 #  Building the rivet-plugins
 
@@ -25,7 +25,6 @@ To build the plugin do the following
 rivet-buildplugin RivetTTZ_analysis.so TTZ_analysis.cc
 ```
 
-(rivet-buildplugin is a script that links rivet libraries from afs. If you don't have afs, you should compile the .so with rivet libraries in appropriate cvmfs locations)
 
 # Running the analysis using the plugin 
 Copy the plugin to the ``rivet-ana`` folder. The plugin can be run standalone or as an option to the ``Generate_tf.py`` script. 
@@ -35,7 +34,7 @@ The following procedure explains how to do a standalone analysis.
 Modify the ``ttll_jo.py`` script accordingly  and can be ran locally by running athena 
 
 ```
-athena -c 'xs=' ttll_jo.py
+athena -c 'xs=1' ttll_jo.py
 ```
 Here ``xs`` is the cross section of the sample under consideration (Used in the plugin internally for normalization)
 
