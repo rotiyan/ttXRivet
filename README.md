@@ -15,6 +15,7 @@ Navigate to the folder ``pmg-rivet`` and setup a latest MCProd cache
 
 ```
 asetup 21.6.3,AthGeneration,here
+source ${LCG_RELEASE_BASE}/LCG_88/MCGenerators/rivet/${RIVETVER}/${LCG_PLATFORM}/rivetenv.sh
 ```
 #  Building the rivet-plugins
 
