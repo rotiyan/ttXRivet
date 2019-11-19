@@ -55,6 +55,7 @@ namespace Rivet
 
                 //Initialize Histograms
                 //
+                _h_sumWeights   = bookHisto1D("sumWeights",5,1,5);
                 _h_event_MET    = bookHisto1D("event_MET",200,10,100);
                 _h_event_nJets  = bookHisto1D("event_nJets",20,-0.5,19.5);
                 _h_event_HT     = bookHisto1D("event_HT",200,20,100);
@@ -105,6 +106,7 @@ namespace Rivet
                 _MET = met.vectorEt().mod();
 
                 _h_event_MET->fill(_MET/GeV,weight);
+                _h_sumWeights->fill(1,weight);
 
                 if(met.vectorEt().mod()<10*GeV)
                 {
@@ -402,6 +404,8 @@ namespace Rivet
             void finalize()
             {
                 float norm = crossSection()/picobarn/sumOfWeights();
+                norm = 1.0;
+
                 scale(_h_event_MET,norm);
                 scale(_h_event_nJets,norm);
                 scale(_h_event_HT,norm);
@@ -441,6 +445,7 @@ namespace Rivet
             }
 
         private:
+            Histo1DPtr _h_sumWeights;
             Histo1DPtr _h_event_MET;
             Histo1DPtr _h_event_nJets;
             Histo1DPtr _h_event_HT;
