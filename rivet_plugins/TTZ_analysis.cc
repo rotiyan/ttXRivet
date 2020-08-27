@@ -1,490 +1,308 @@
 #include "Rivet/Analysis.hh"
 #include "Rivet/Projections/FinalState.hh"
-#include "Rivet/Projections/InvMassFinalState.hh"
-#include "Rivet/Projections/PromptFinalState.hh"
-#include "Rivet/Projections/HeavyHadrons.hh"
 #include "Rivet/Projections/VetoedFinalState.hh"
 #include "Rivet/Projections/ChargedLeptons.hh"
-#include "Rivet/Projections/ChargedFinalState.hh"
 #include "Rivet/Projections/MissingMomentum.hh"
-#include "Rivet/Projections/IdentifiedFinalState.hh"
 #include "Rivet/Projections/FastJets.hh"
+#include "Rivet/Projections/ZFinder.hh"
 #include "Rivet/AnalysisLoader.hh"
 
-namespace Rivet
-{
-    class TTZ_analysis : public Analysis
-    {
-        public:
-            TTZ_analysis(): Analysis("TTZ_analysis"){}
+namespace Rivet {
 
-            void init()
-            {
-                IdentifiedFinalState electrons(FinalState(-4,4,10*GeV));
-                electrons.acceptId(PID::ELECTRON);
-                electrons.acceptId(PID::POSITRON);
-                addProjection(electrons,"EFS");
+  class TTZ_analysis: public Analysis {
+  public:
 
-                IdentifiedFinalState muons(FinalState(-4,4,10*GeV));
-                muons.acceptId(PID::MUON);
-                muons.acceptId(PID::ANTIMUON);
-                addProjection(muons,"MUFS");
+    //Constructor
+    TTZ_analysis() : Analysis("TTZ_analysis") { } 
 
-                ChargedLeptons lfs(FinalState(-4,4,10*GeV));
-                addProjection(lfs,"LFS");
+    /// Set up projections and book histograms
+    void init() {
 
-                ChargedFinalState cfs(FinalState(-4,4,0*GeV));
-                addProjection(cfs,"CFS");
+      _mode = 1; string pre = "onelep_"; // default is single-lepton decay mode
+      if ( getOption("TTMODE") == "ALLHAD" ) { _mode = 0; pre = "allhad_"; }
+      if ( getOption("TTMODE") == "ONELEP" ) { _mode = 1; pre = "onelep_"; }
+      if ( getOption("TTMODE") == "TWOLEP" ) { _mode = 2; pre = "twolep_"; }
+      if ( getOption("TTMODE") == "ANYLEP" ) { _mode = 3; pre = "anylep_"; }
 
-                addProjection(HeavyHadrons(Cuts::abseta <5 && Cuts::pT >5*GeV),"BCHadrons");
+      // A FinalState is used to select particles within |eta| < 4.2 and with pT
+      // > 30 GeV, out of which the ChargedLeptons projection picks only the
+      // electrons and muons, to be accessed later as "LFS".
+      ChargedLeptons lfs(FinalState(Cuts::abseta < 4.2 && Cuts::pT > 30*GeV));
+      declare(lfs, "LFS");
 
-                //FinalState to reconstruct jets
-                VetoedFinalState fs (FinalState(-4,4,0*GeV));
-                fs.addVetoOnThisFinalState(lfs);
-                addProjection(FastJets(fs, FastJets::ANTIKT,0.4),"Jets");
-                addProjection(MissingMomentum(fs),"MissingET");
+      // A second FinalState is used to select all particles in |eta| < 4.2,
+      // with no pT cut. This is used to construct jets and measure missing
+      // transverse energy.
+      VetoedFinalState fs(FinalState(Cuts::abseta < 4.2));
+      fs.addVetoOnThisFinalState(lfs);
+      declare(FastJets(fs, FastJets::ANTIKT, 0.6), "Jets");
+      declare(MissingMomentum(fs), "MissingET");
 
-                IdentifiedFinalState nu_id(FinalState(-4,4,0*GeV));
-                nu_id.acceptNeutrinos();
-                PromptFinalState neutrinos(nu_id);
-                addProjection(neutrinos,"Neutrinos");
+      // Booking of histograms
+      book(_h["njets"], pre + "jet_mult", 11, -0.5, 10.5);
+      //
+      book(_h["jet_1_pT"], pre + "jet_1_pT", logspace(50, 20.0, 500.0));
+      book(_h["jet_2_pT"], pre + "jet_2_pT", logspace(50, 20.0, 400.0));
+      book(_h["jet_3_pT"], pre + "jet_3_pT", logspace(50, 20.0, 300.0));
+      book(_h["jet_4_pT"], pre + "jet_4_pT", logspace(50, 20.0, 200.0));
+      book(_h["jet_HT"],   pre + "jet_HT", logspace(50, 100.0, 2000.0));
+      //
+      book(_h["bjet_1_pT"], pre + "jetb_1_pT", logspace(50, 20.0, 400.0));
+      book(_h["bjet_2_pT"], pre + "jetb_2_pT", logspace(50, 20.0, 300.0));
+      //
+      book(_h["ljet_1_pT"], pre + "jetl_1_pT", logspace(50, 20.0, 400.0));
+      book(_h["ljet_2_pT"], pre + "jetl_2_pT", logspace(50, 20.0, 300.0));
+      //
+      if (_mode != 2)  book(_h["tt_mass"], pre + "tt_mass", 200, 300.0, 700.0);
+      //
+      if (_mode < 2) { // these rely on a hadronic W being part of the ttbar decay
+        book(_h["W_mass"], pre + "W_mass", 75, 30, 180);
+        book(_h["t_mass"], pre + "t_mass", 150, 130, 430);
+        book(_h["t_mass_W_cut"], pre + "t_mass_W_cut", 150, 130, 430);
+        book(_h["jetb_1_W_dR"],  pre + "jetb_1_W_dR", 20, 0.0, 7.0);
+        book(_h["jetb_1_W_deta"], pre + "jetb_1_W_deta", 20, 0.0, 7.0);
+        book(_h["jetb_1_W_dphi"], pre + "jetb_1_W_dphi", 20, 0.0, M_PI);
+      }
+      //
+      book(_h["jetb_1_jetb_2_dR"],   pre + "jetb_1_jetb_2_dR", 20, 0.0, 7.0);
+      book(_h["jetb_1_jetb_2_deta"], pre + "jetb_1_jetb_2_deta", 20, 0.0, 7.0);
+      book(_h["jetb_1_jetb_2_dphi"], pre + "jetb_1_jetb_2_dphi", 20, 0.0, M_PI);
+      book(_h["jetb_1_jetl_1_dR"],   pre + "jetb_1_jetl_1_dR", 20, 0.0, 7.0);
+      book(_h["jetb_1_jetl_1_deta"], pre + "jetb_1_jetl_1_deta", 20, 0.0, 7.0);
+      book(_h["jetb_1_jetl_1_dphi"], pre + "jetb_1_jetl_1_dphi", 20, 0.0, M_PI);
+      book(_h["jetl_1_jetl_2_dR"],   pre + "jetl_1_jetl_2_dR", 20, 0.0, 7.0);
+      book(_h["jetl_1_jetl_2_deta"], pre + "jetl_1_jetl_2_deta", 20, 0.0, 7.0);
+      book(_h["jetl_1_jetl_2_dphi"], pre + "jetl_1_jetl_2_dphi", 20, 0.0, M_PI);
+      if (_mode > 0) { // these rely on at least one leptonic decay mode
+        book(_h["jetb_1_l_dR"],   pre + "jetb_1_l_dR", 20, 0.0, 7.0);
+        book(_h["jetb_1_l_deta"], pre + "jetb_1_l_deta", 20, 0.0, 7.0);
+        book(_h["jetb_1_l_dphi"], pre + "jetb_1_l_dphi", 20, 0.0, M_PI);
+        book(_h["jetb_1_l_mass"], pre + "jetb_1_l_mass", 40, 0.0, 500.0);
+        if (_mode > 1) {
+          book(_h["jetb_1_l2_dR"],   pre + "jetb_1_l2_dR", 20, 0.0, 7.0);
+          book(_h["jetb_1_l2_deta"], pre + "jetb_1_l2_deta", 20, 0.0, 7.0);
+          book(_h["jetb_1_l2_dphi"], pre + "jetb_1_l2_dphi", 20, 0.0, M_PI);
+          book(_h["jetb_1_l2_mass"], pre + "jetb_1_l2_mass", 40, 0.0, 500.0);
+        }
+      }
+    }
 
-                VetoedFinalState vfs(FinalState(-4,4,0*GeV));
-                vfs.addVetoOnThisFinalState(lfs);
-                addProjection(vfs,"VFS");
 
-                //Initialize Histograms
-                //
-                _h_sumWeights   = bookHisto1D("sumWeights",5,1,5);
-                _h_event_MET    = bookHisto1D("event_MET",200,10,100);
-                _h_event_nJets  = bookHisto1D("event_nJets",20,-0.5,19.5);
-                _h_event_HT     = bookHisto1D("event_HT",200,20,100);
-                _h_event_nEl    = bookHisto1D("event_nEl",20,-0.5,19.5);
-                _h_event_nMu    = bookHisto1D("event_nMu",20,-0.5,19.5);
+    void analyze(const Event& event) {
+      const double weight = 1.0;
 
-                _h_diEl_mass    = bookHisto1D("diEl_mass",240,0,120);
-                _h_diEl_pt      = bookHisto1D("diEl_pt",500,10,6000);
-                _h_diEl_eta     = bookHisto1D("diEl_eta",100,-4,4);
-                _h_diEl_phi     = bookHisto1D("diEl_phi",100,0,6);
+      // Use the "LFS" projection to require at least one hard charged
+      // lepton. This is an experimental signature for the leptonically decaying
+      // W. This helps to reduce pure QCD backgrounds.
+      const ChargedLeptons& lfs = apply<ChargedLeptons>(event, "LFS");
+      MSG_DEBUG("Charged lepton multiplicity = " << lfs.chargedLeptons().size());
+      for (const Particle& lepton : lfs.chargedLeptons()) {
+        MSG_DEBUG("Lepton pT = " << lepton.pT());
+      }
 
-                _h_diMu_mass    = bookHisto1D("diMu_mass",240,0,120);
-                _h_diMu_pt      = bookHisto1D("diMu_pt",500,10,6000);
-                _h_diMu_eta     = bookHisto1D("diMu_eta",100,-4,4);
-                _h_diMu_phi     = bookHisto1D("diMu_phi",100,0,6);
+      size_t nLeps = lfs.chargedLeptons().size();
+      bool leptonMultiFail = _mode == 3 && nLeps == 0; // non-all-hadronic
+      leptonMultiFail |= _mode == 2 && nLeps != 2; // dilepton
+      leptonMultiFail |= _mode == 1 && nLeps != 1; // single lepton
+      leptonMultiFail |= _mode == 0 && nLeps != 0; // all-hadronic
+      if (leptonMultiFail) {
+        MSG_DEBUG("Event failed lepton multiplicity cut");
+        vetoEvent;
+      }
 
-                _h_WLep_mass    = bookHisto1D("WLep_mass",240,0,120);
-                _h_WLep_pt      = bookHisto1D("WLep_pt",500,10,6000);
-                _h_WLep_eta     = bookHisto1D("WLep_eta",100,-4,4);
-                _h_WLep_phi     = bookHisto1D("Wlept_phi",100,0,6);
+      // Use a missing ET cut to bias toward events with a hard neutrino from
+      // the leptonically decaying W. This helps to reduce pure QCD backgrounds.
+      // not applied in all-hadronic mode
+      const Vector3& met = apply<MissingMomentum>(event, "MissingET").vectorMissingPt();
+      MSG_DEBUG("Vector pT = " << met.mod() << " GeV");
+      if (_mode > 0 && met.mod() < 30*GeV) {
+        MSG_DEBUG("Event failed missing ET cut");
+        vetoEvent;
+      }
 
-                _h_WHad_mass    = bookHisto1D("WHad_mass",240,0,120);
-                _h_WHad_pt      = bookHisto1D("WHad_pt",500,10,6000);
-                _h_WHad_eta     = bookHisto1D("WHad_eta",100,-4,4);
-                _h_WHad_phi     = bookHisto1D("WHad_phi",100,0,6);
+      // Use the "Jets" projection to check how many jets with pT > 30 GeV there are
+      // remove jets overlapping with any lepton (dR < 0.3)
+      // cut on jet multiplicity depending on ttbar decay mode
+      const FastJets& jetpro = apply<FastJets>(event, "Jets");
+      const Jets jets = discardIfAnyDeltaRLess(jetpro.jetsByPt(30*GeV), lfs.chargedLeptons(), 0.3);
 
-                _h_top_mass     = bookHisto1D("top_mass",200,120,380);
-                _h_top_pt       = bookHisto1D("top_pt",100,150,250);
-                _h_top_eta      = bookHisto1D("top_eta",100,-4,4);
-                _h_top_phi      = bookHisto1D("top_phi",100,0,6);
+      if (     _mode == 0 && jets.size() < 6)  vetoEvent; // all-hadronic
+      else if (_mode == 1 && jets.size() < 4)  vetoEvent; // single lepton
+      else if (_mode == 2 && jets.size() < 2)  vetoEvent; // dilepton
+      else if (_mode == 3 && nLeps == 1 && jets.size() < 4)  vetoEvent; // non-allhadronic
+      else if (_mode == 3 && nLeps == 2 && jets.size() < 2)  vetoEvent;
+      MSG_DEBUG("Event failed jet multiplicity cut");
+
+      // Fill histograms for inclusive jet kinematics 
+      _h["njets"]->fill(jets.size(), weight);
+      if (jets.size() > 0)  _h["jet_1_pT"]->fill(jets[0].pT()/GeV, weight);
+      if (jets.size() > 1)  _h["jet_2_pT"]->fill(jets[1].pT()/GeV, weight);
+      if (jets.size() > 2)  _h["jet_3_pT"]->fill(jets[2].pT()/GeV, weight);
+      if (jets.size() > 3)  _h["jet_4_pT"]->fill(jets[3].pT()/GeV, weight);
+      double ht = 0.0;
+      for (const Jet& j : jets) { ht += j.pT(); }
+      _h["jet_HT"]->fill(ht/GeV, weight);
+
+      // Sort the jets into b-jets and light jets. We expect one hard b-jet from
+      // each top decay, so our 4 hardest jets should include two b-jets. The
+      // Jet::bTagged() method is equivalent to perfect experimental
+      // b-tagging, in a generator-independent way.
+      Jets bjets, ljets;
+      for (const Jet& jet : jets) {
+        if (jet.bTagged())  bjets += jet;
+        else                ljets += jet;
+      }
+      MSG_DEBUG("Number of b-jets = " << bjets.size());
+      MSG_DEBUG("Number of l-jets = " << ljets.size());
+      if (bjets.size() != 2) {
+        MSG_DEBUG("Event failed post-lepton-isolation b-tagging cut");
+        vetoEvent;
+      }
+      if (_mode == 0 && ljets.size() < 4)  vetoEvent;
+      else if (_mode == 1 && ljets.size() < 2)  vetoEvent;
+      else if (_mode == 3 && nLeps == 1 && ljets.size() < 2)  vetoEvent;
+
+      // Plot the pTs of the identified jets.
+      _h["bjet_1_pT"]->fill(bjets[0].pT(), weight);
+      _h["bjet_2_pT"]->fill(bjets[1].pT(), weight);
+      // need to check size to cater for dileptonic mode
+      if (ljets.size() > 0)  _h["ljet_1_pT"]->fill(ljets[0].pT(), weight);
+      if (ljets.size() > 1)  _h["ljet_2_pT"]->fill(ljets[1].pT(), weight);
 
 
-                _h_top_dR       = bookHisto1D("top_dR",50,0,2);
-                _h_top_dEta     = bookHisto1D("top_dEta",50,0,3);
-                _h_top_dPhi     = bookHisto1D("top_dPhi",100,0,3);
+      // Try to reconstruct ttbar pair (doesn't really work in the dileptonic mode)
+      FourMomentum ttpair = bjets[0].mom() + bjets[1].mom();
+      if (_mode == 0) {
+        ttpair += ljets[0].mom() + ljets[1].mom() + ljets[2].mom() + ljets[3].mom();
+      }
+      else if (nLeps < 2) {
+        ttpair += ljets[0].mom() + ljets[1].mom();
+        const FourMomentum lep = lfs.chargedLeptons()[0].mom();
+        double pz = findZcomponent(lep, met);
+        FourMomentum neutrino(sqrt(sqr(met.x()) + sqr(met.y()) + sqr(pz)), met.x(), met.y(), pz);
+        ttpair += lep + neutrino;
+      }
+      if (nLeps < 2)  _h["tt_mass"]->fill(ttpair.mass()/GeV, weight);
 
-
+      if (_mode < 2) {
+        // Construct the hadronically decaying W momentum 4-vector from pairs of
+        // non-b-tagged jets. The pair which best matches the W mass is used. We start
+        // with an always terrible 4-vector estimate which should always be "beaten" by
+        // a real jet pair.
+        FourMomentum W(10*(sqrtS()>0.?sqrtS():13000.), 0, 0, 0);
+        for (size_t i = 0; i < ljets.size()-1; ++i) {
+          for (size_t j = i + 1; j < ljets.size(); ++j) {
+            const FourMomentum Wcand = ljets[i].momentum() + ljets[j].momentum();
+            MSG_TRACE(i << "," << j << ": candidate W mass = " << Wcand.mass()/GeV
+                      << " GeV, vs. incumbent candidate with " << W.mass()/GeV << " GeV");
+            if (fabs(Wcand.mass() - 80.4*GeV) < fabs(W.mass() - 80.4*GeV)) {
+              W = Wcand;
             }
+          }
+        }
+        MSG_DEBUG("Candidate W mass = " << W.mass() << " GeV");
 
-            void analyze(const Event & event)
-            {
-                const double weight       = event.weight();
+        // There are two b-jets with which this can be combined to make the
+        // hadronically decaying top, one of which is correct and the other is
+        // not... but we have no way to identify which is which, so we construct
+        // both possible top momenta and fill the histograms with both.
+        const FourMomentum t1 = W + bjets[0].momentum();
+        const FourMomentum t2 = W + bjets[1].momentum();
+        _h["W_mass"]->fill(W.mass(), weight);
+        _h["t_mass"]->fill(t1.mass(), weight);
+        _h["t_mass"]->fill(t2.mass(), weight);
 
-                const ChargedLeptons& lfs = applyProjection<ChargedLeptons>(event, "LFS");
-                const Particles electrons = applyProjection<IdentifiedFinalState>(event,"EFS").particles();
+        // Placing a cut on the well-known W mass helps to reduce backgrounds
+        // only done for all-hadronic and semileptonic mode (since W is hadronic)
+        if (!inRange(W.mass()/GeV, 75.0, 85.0))  vetoEvent;
+        MSG_DEBUG("W found with mass " << W.mass()/GeV << " GeV");
 
-                const MissingMomentum &met = applyProjection<MissingMomentum>(event,"MissingET");
-                _MET = met.vectorEt().mod();
+        _h["t_mass_W_cut"]->fill(t1.mass(), weight);
+        _h["t_mass_W_cut"]->fill(t2.mass(), weight);
 
-                _h_event_MET->fill(_MET/GeV,weight);
-                _h_sumWeights->fill(1,weight);
+        _h["jetb_1_W_dR"]->fill(deltaR(bjets[0].momentum(), W),weight);
+        _h["jetb_1_W_deta"]->fill(fabs(bjets[0].eta()-W.eta()),weight);
+        _h["jetb_1_W_dphi"]->fill(deltaPhi(bjets[0].momentum(),W),weight);
+      }
 
-                if(met.vectorEt().mod()<10*GeV)
-                {
-                    vetoEvent;
-                }
+      _h["jetb_1_jetb_2_dR"]->fill(deltaR(bjets[0].momentum(), bjets[1].momentum()),weight);
+      _h["jetb_1_jetb_2_deta"]->fill(fabs(bjets[0].eta()-bjets[1].eta()),weight);
+      _h["jetb_1_jetb_2_dphi"]->fill(deltaPhi(bjets[0].momentum(),bjets[1].momentum()),weight);
 
+      if (ljets.size() > 0) {
+        _h["jetb_1_jetl_1_dR"]->fill(deltaR(bjets[0].momentum(), ljets[0].momentum()),weight);
+        _h["jetb_1_jetl_1_deta"]->fill(fabs(bjets[0].eta()-ljets[0].eta()),weight);
+        _h["jetb_1_jetl_1_dphi"]->fill(deltaPhi(bjets[0].momentum(),ljets[0].momentum()),weight);
+        if (ljets.size() > 1) {
+          _h["jetl_1_jetl_2_dR"]->fill(deltaR(ljets[0].momentum(), ljets[1].momentum()),weight);
+          _h["jetl_1_jetl_2_deta"]->fill(fabs(ljets[0].eta()-ljets[1].eta()),weight);
+          _h["jetl_1_jetl_2_dphi"]->fill(deltaPhi(ljets[0].momentum(),ljets[1].momentum()),weight);
+        }
+      }
 
+      // lepton-centric plots
+      if (_mode > 0) {
+        FourMomentum l=lfs.chargedLeptons()[0].momentum();
+        _h["jetb_1_l_dR"]->fill(deltaR(bjets[0].momentum(), l),weight);
+        _h["jetb_1_l_deta"]->fill(fabs(bjets[0].eta()-l.eta()),weight);
+        _h["jetb_1_l_dphi"]->fill(deltaPhi(bjets[0].momentum(),l),weight);
+        _h["jetb_1_l_mass"]->fill(FourMomentum(bjets[0].momentum()+l).mass(), weight);
 
-                Particles muons = applyProjection<IdentifiedFinalState>(event,"MUFS").particles();
+        if (nLeps > 1) {
+          FourMomentum l=lfs.chargedLeptons()[1].momentum();
+          _h["jetb_1_l2_dR"]->fill(deltaR(bjets[0].momentum(), l),weight);
+          _h["jetb_1_l2_deta"]->fill(fabs(bjets[0].eta()-l.eta()),weight);
+          _h["jetb_1_l2_dphi"]->fill(deltaPhi(bjets[0].momentum(),l),weight);
+          _h["jetb_1_l2_mass"]->fill(FourMomentum(bjets[0].momentum()+l).mass(), weight);
+        }
+      }
 
-                const FastJets & jetpro = applyProjection<FastJets>(event, "Jets");
-                const Jets alljets      = jetpro.jetsByPt(20*GeV);
+    }
 
-                Particles cand_e;
-                //Discard two electrons within R=0.1
-                std::vector<bool> vetoed(electrons.size(),false);
-                for(size_t i =0;i<electrons.size(); ++i)
-                {
-                    if(vetoed[i]) continue;
+    double findZcomponent(const FourMomentum& lepton, const Vector3& met) const {
+      // estimate z-component of momentum given lepton 4-vector and MET 3-vector
+      double pz_estimate;
+      double m_W = 80.399*GeV;
+      double k = (( sqr( m_W ) - sqr( lepton.mass() ) ) / 2 ) + (lepton.px() * met.x() + lepton.py() * met.y());
+      double a = sqr ( lepton.E() )- sqr ( lepton.pz() );
+      double b = -2*k*lepton.pz();
+      double c = sqr( lepton.E() ) * sqr( met.perp() ) - sqr( k );
+      double discriminant = sqr(b) - 4 * a * c;
+      double quad[2] = { (- b - sqrt(discriminant)) / (2 * a), (- b + sqrt(discriminant)) / (2 * a) }; //two possible quadratic solns
+      if (discriminant < 0)  pz_estimate = - b / (2 * a); //if the discriminant is negative
+      else { //if the discriminant is greater than or equal to zero, take the soln with smallest absolute value
+        double absquad[2];
+        for (int n=0; n<2; ++n)  absquad[n] = fabs(quad[n]);
+        if (absquad[0] < absquad[1])  pz_estimate = quad[0];
+        else                          pz_estimate = quad[1];
+      }
+      return pz_estimate;
+    }
 
-                    for(size_t j=i+1; j <electrons.size(); ++j)
-                    {
-                        if(deltaR(electrons[i],electrons[j]) <0.1)
-                        {
-                            vetoed[j]=true;
-                        }
-                    }
+    void finalize() {
+      const double sf = crossSection() / sumOfWeights();
+      for (auto hist : _h) { scale(hist.second, sf); }
+    }
 
-                    if(vetoed[i]==false)
-                    {
-                        cand_e.push_back(electrons[i]);
-                    }
-                }
+    //@}
 
-                //Keep electrons away from jets.
-                Particles cand2_e;
+  protected:
 
-                foreach(const Particle &e, cand_e)
-                {
-                    bool away = true;
-                    foreach(const Jet& jet, jetpro.jetsByPt())
-                    {
-                        if(deltaR(e,jet) <0.4)
-                        {
-                            away = false;
-                            break;
-                        }
-                    }
-                    if(away)
-                    {
-                        cand2_e.push_back(e);
-                    }
-                }
-
-                //Keep muons away from jets
-                Particles cand2_mu;
-                foreach(const Particle &mu, muons)
-                {
-                    bool away = true;
-                    foreach(const Jet& jet, jetpro.jetsByPt())
-                    {
-                        if(deltaR(mu,jet)<0.4)
-                        {
-                            away = false;
-                            break;
-                        }
-                    }
-                    if(away) cand2_mu.push_back(mu);
-                }
-
-                //Electron isolation
-                Particles charg_particles = applyProjection<ChargedFinalState>(event,"CFS").particles();
-                Particles cand3_e;
-                foreach(const Particle&e, cand2_e)
-                {
-                    double ptInCone = -e.pT(); //Substract the electron pt
-                    foreach(const Particle&p, charg_particles)
-                    {
-                        if(p.pT() >0.4*GeV && deltaR(e,p) <=0.3)
-                        {
-                            ptInCone += p.pT();
-                        }
-                    }
-                    if(ptInCone/e.pT() <0.18) cand3_e.push_back(e);
-                }
-
-                //Muon isolation
-                Particles cand3_mu;
-                foreach(const Particle &mu,cand2_mu)
-                {
-                    double ptInCone = -mu.pT();
-                    foreach( const Particle &track, charg_particles)
-                    {
-                        if(track.pT()>1*GeV && deltaR(mu,track) <=0.3)
-                        {
-                            ptInCone += track.pT();
-                        }
-                    }
-                    if(ptInCone/mu.pT() <0.12) cand3_mu.push_back(mu);
-                }
-
-                //Select same flavour opposite sign pairs
-                Particles recon_e,recon_mu;
-                std::vector<FourMomentum> diEl_FourMom,diMu_FourMom;
-
-                if (cand3_e.size() > 2 ) vetoEvent;
-                if (cand3_mu.size()> 2 ) vetoEvent;
-
-                for(size_t i =0;i<cand3_e.size(); ++i)
-                {
-                    for(size_t j=i+1; j< cand3_e.size();++j)
-                    {
-                        if(cand3_e[i].pid()*cand3_e[j].pid()<0 &&deltaR(cand3_e[i],cand3_e[j])>0.2)
-                            diEl_FourMom.push_back(cand3_e[i].momentum() + cand3_e[j].momentum());
-                    }
-                }
-
-                for(size_t i=0; i <cand3_mu.size(); ++i)
-                {
-                    for(size_t j=i+1; j<cand3_mu.size(); ++j)
-                    {
-                        if(cand3_mu[i].pid()*cand3_mu[j].pid()<0 && deltaR(cand3_mu[i],cand3_mu[j])>0.2)
-                            diMu_FourMom.push_back(cand3_mu[i].momentum() + cand3_mu[j].momentum());
-                    }
-                }
-
-                bool diElEvent=false;
-                bool diMuEvent=false;
-
-                FourMomentum zeeCand(10*sqrtS(),0.,0.,0.);
-                float targetMass = 91.2*GeV;
-                foreach(const FourMomentum &vec, diEl_FourMom)
-                {
-                    if(1<vec.mass()/GeV && 120>vec.mass()/GeV)
-                    {
-                        MSG_DEBUG("diEl Mass diff:"<< fabs(vec.mass()-targetMass));
-                        if(fabs(vec.mass()-targetMass) < zeeCand.mass()-targetMass)
-                        {
-                            const FourMomentum myVec = vec;
-                            zeeCand = myVec;
-                            diElEvent =true;
-                        }
-                    }
-                }
-                if(diElEvent)
-                {
-                    _h_diEl_mass->fill(zeeCand.mass()/GeV,weight);
-                    _h_diEl_pt->fill(zeeCand.pT()/GeV,weight);
-                    _h_diEl_eta->fill(zeeCand.eta(),weight);
-                    _h_diEl_phi->fill(zeeCand.phi()/weight);
-                }
-
-                FourMomentum zmumuCand(0.,0.,0.,0.);
-                foreach(const FourMomentum &vec, diMu_FourMom)
-                {
-                    if(1<vec.mass()/GeV && 120 >vec.mass()/GeV)
-                    {
-                        if(fabs(vec.mass()-targetMass) < zeeCand.mass()-targetMass)
-                        {
-                            const FourMomentum myVec = vec;
-                            zmumuCand = myVec;
-                            diMuEvent =true;
-                        }
-                    }
-                }
-                if(diMuEvent)
-                {
-                    _h_diMu_mass->fill(zmumuCand.mass()/GeV,weight);
-                    _h_diMu_pt->fill(zmumuCand.pT()/GeV,weight);
-                    _h_diMu_eta->fill(zmumuCand.eta(),weight);
-                    _h_diMu_phi->fill(zmumuCand.phi(),weight);
-                }
-
-                if(!(diElEvent||diMuEvent))
-                {
-                    vetoEvent;
-                    MSG_DEBUG("Failed diLepton inv Mass cut");
-                }
-
-                //Find Leptonic W's 
-                const Particles neutrinos = applyProjection<PromptFinalState>(event,"Neutrinos").particles();
-                //LoopOver electrons and muons to find the Wlep candidate
-                FourMomentum Wel(10*sqrtS(),0.,0.,0.);
-                FourMomentum Wmu(10*sqrtS(),0.,0.,0.);
-
-                foreach(const Particle &nu,neutrinos)
-                {
-                    foreach(Particle &el,cand3_e)
-                    {
-                        const FourMomentum WCand = el.momentum() + nu.momentum();
-                        if(fabs(WCand.mass()-80.4*GeV) < Wel.mass()-80.04*GeV) Wel = WCand;
-                    }
-                    foreach(Particle &mu,cand3_mu)
-                    {
-                        const FourMomentum WCand = mu.momentum() + nu.momentum();
-                        if(fabs(WCand.mass()-80.4*GeV) < Wmu.mass()-80.04*GeV) Wmu = WCand;
-                    }
-                }
-                MSG_DEBUG("Wel mass:"<<Wel.mass()/GeV);
-
-                _h_WLep_mass->fill(Wel.mass()/GeV,weight);
-                _h_WLep_mass->fill(Wmu.mass()/GeV,weight);
-                _h_WLep_pt->fill(Wel.pT()/GeV,weight);
-                _h_WLep_pt->fill(Wmu.pT()/GeV,weight);
-                _h_WLep_eta->fill(Wel.eta(),weight);
-                _h_WLep_eta->fill(Wmu.eta(),weight);
-
-                //Do B-jets..
-
-                //Get b-hadrons
-                const Particles bhadrons = sortByPt(applyProjection<HeavyHadrons>(event,"BCHadrons").bHadrons());
-
-                const Jets jets = jetpro.jetsByPt(20*GeV);
-                Jets bjets,ljets;
-                foreach(const Jet &jet,jets)
-                {
-                    bool isolated =true;
-                    foreach (const Particle &lepton, lfs.chargedLeptons())
-                    {
-                        if(deltaR(jet.momentum(),lepton.momentum())<0.3)
-                        {
-                            isolated = false;
-                            break;
-                        }
-                    }
-                    if(!isolated)
-                    {
-                        MSG_DEBUG("Jet failed lepton isolation cut");
-                        break;
-                    }
-                    foreach( const Particle & b, bhadrons)
-                    {
-                        if(deltaR(jet,b) < 0.3)
-                        {
-                            bjets.push_back(jet);
-                        }
-                        else
-                        {
-                            ljets.push_back(jet);
-                        }
-                    }
-                }
-                MSG_DEBUG("Number of b-jets = "<<bjets.size());
-                MSG_DEBUG("Number of l-jets = "<< ljets.size());
-                if(bjets.size() < 2)
-                {
-                    MSG_DEBUG("#bjets < 2");
-                    vetoEvent;
-
-                }
-                if(ljets.size()<2)
-                {
-                    MSG_DEBUG("l-jets<2");
-                    vetoEvent;
-                }
-
-                double ht=0;
-                foreach (const Jet &jet,jets)
-                {
-                    ht += jet.pT();
-                }
-                _h_event_HT->fill(ht/GeV,weight);
-                _h_event_nJets->fill(jets.size(),weight);
-                _h_event_nEl->fill(cand3_e.size(),weight);
-                _h_event_nMu->fill(cand3_mu.size(),weight);
-
-                //Find W candidate
-                FourMomentum W(10*sqrtS(),0,0,0);
-                for(size_t i =0;i<ljets.size()-1;++i)
-                {
-                    for(size_t j =i+1; j<ljets.size();++j)
-                    {
-                        const FourMomentum Wcand = ljets[i].momentum() + ljets[j].momentum();
-                        if(fabs(Wcand.mass() - 80.4*GeV) < fabs(W.mass() -80.4*GeV))
-                        {
-                            W = Wcand;
-                        }
-                    }
-                }
-                _h_WHad_mass->fill(W.mass());
-                _h_WHad_pt->fill(W.pt());
-                _h_WHad_eta->fill(W.eta());
-                _h_WHad_phi->fill(W.phi());
-
-                //Construct top candidates
-                const FourMomentum t1 = W + bjets[0].momentum();
-                const FourMomentum t2 = W + bjets[1].momentum();
-
-                _h_top_mass->fill(t1.mass()/GeV,weight);
-                _h_top_mass->fill(t2.mass()/GeV,weight);
-                MSG_DEBUG("What is picobarn"<<picobarn);
-
-            }
-
-            void finalize()
-            {
-                float norm = crossSection()/picobarn/sumOfWeights();
-                norm = 1.0;
-
-                scale(_h_event_MET,norm);
-                scale(_h_event_nJets,norm);
-                scale(_h_event_HT,norm);
-                scale(_h_event_nEl,norm);
-                scale(_h_event_nMu,norm);
-
-                scale(_h_diEl_mass,norm);
-                scale(_h_diEl_pt,norm);
-                scale(_h_diEl_eta,norm);
-                scale(_h_diEl_phi,norm);
-
-                scale(_h_diMu_mass,norm);
-                scale(_h_diMu_pt,norm);
-                scale(_h_diMu_eta,norm);
-                scale(_h_diMu_phi,norm);
-
-                scale(_h_WLep_mass,norm);
-                scale(_h_WLep_pt,norm);
-                scale(_h_WLep_eta,norm);
-                scale(_h_WLep_phi,norm);
-
-                scale(_h_WHad_mass,norm);
-                scale(_h_WHad_pt,norm);
-                scale(_h_WHad_eta,norm);
-                scale(_h_WHad_phi,norm);
-
-                scale(_h_top_mass,norm);
-                scale(_h_top_pt,norm);
-                scale(_h_top_eta,norm);
-                scale(_h_top_phi,norm);
+      size_t _mode;
 
 
-                scale(_h_top_dR,norm);
-                scale(_h_top_dEta,norm);
-                scale(_h_top_dPhi,norm);
+  private:
 
-            }
+    // @name Histogram data members
+    //@{
+    map<string, Histo1DPtr> _h;
+    //@}
 
-        private:
-            Histo1DPtr _h_sumWeights;
-            Histo1DPtr _h_event_MET;
-            Histo1DPtr _h_event_nJets;
-            Histo1DPtr _h_event_HT;
-            Histo1DPtr _h_event_nEl;
-            Histo1DPtr _h_event_nMu;
-
-            Histo1DPtr _h_diEl_mass;
-            Histo1DPtr _h_diEl_pt;
-            Histo1DPtr _h_diEl_eta;
-            Histo1DPtr _h_diEl_phi;
-
-            Histo1DPtr _h_diMu_mass;
-            Histo1DPtr _h_diMu_pt;
-            Histo1DPtr _h_diMu_eta;
-            Histo1DPtr _h_diMu_phi;
-
-            Histo1DPtr _h_WLep_mass;
-            Histo1DPtr _h_WLep_pt;
-            Histo1DPtr _h_WLep_eta;
-            Histo1DPtr _h_WLep_phi;
-
-            Histo1DPtr _h_WHad_mass;
-            Histo1DPtr _h_WHad_pt;
-            Histo1DPtr _h_WHad_eta;
-            Histo1DPtr _h_WHad_phi;
-
-            Histo1DPtr _h_top_mass;
-            Histo1DPtr _h_top_pt;
-            Histo1DPtr _h_top_eta;
-            Histo1DPtr _h_top_phi;
+  };
 
 
-            Histo1DPtr _h_top_dR;
-            Histo1DPtr _h_top_dEta;
-            Histo1DPtr _h_top_dPhi;
 
-            float _MET;
+  // The hook for the plugin system
+  DECLARE_RIVET_PLUGIN(TTZ_analysis);
 
-    };
-
-    DECLARE_RIVET_PLUGIN(TTZ_analysis);
 }
