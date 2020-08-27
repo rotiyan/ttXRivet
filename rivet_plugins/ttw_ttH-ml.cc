@@ -67,59 +67,83 @@ namespace Rivet {
 
       //Histogramming 
       _h_sumOfWeights			= bookHisto1D("sumOfWeights",2,0,2);
-      _h_2lSS0tau_MET			= bookHisto1D("2lSS0tau_MET",100,0,500);
-      _h_2lSS1tau_MET			= bookHisto1D("2lSS1tau_MET",100,0,500);
+      _h_2lSS0tau_MET			= bookHisto1D("2lSS0tau_MET",50,0,500);
+      _h_2lSS1tau_MET			= bookHisto1D("2lSS1tau_MET",50,0,500);
 
       _h_2lSS0tau_region1_nJets  	= bookHisto1D("2lSS0tau_region1_nJets",10,-0.5,9.5);
-      _h_2lSS0tau_region1_HT	    	= bookHisto1D("2lSS0tau_region1_HT",200,0,1000);
-      _h_2lSS0tau_region1_nBjets  	= bookHisto1D("2lSS0tau_region1_nBjets",10,-0.5,9.5);
-      _h_2lSS0tau_region1_bjet0pT 	= bookHisto1D("2lSS0tau_region1_bjet0Pt",200,0,1000);
-      _h_2lSS0tau_region1_lep0pT  	= bookHisto1D("2lSS0tau_region1_lep0Pt",200,0,1000);
-      _h_2lSS0tau_region1_lepJetMinDR 	= bookHisto1D("2lSS0tau_region1_lepJetminDR",20,0,M_PI/2);
-      _h_2lSS0tau_region1_DR_lep01 	= bookHisto1D("2lSS0tau_region1_DR_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region1_DEta_lep01  	= bookHisto1D("2lSS0tau_region1_DEta_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region1_DPhi_lep01 	= bookHisto1D("2lSS0tau_region1_DPhi_lep01",20,0,2*M_PI);
+      _h_2lSS0tau_region1_HT	    	= bookHisto1D("2lSS0tau_region1_HT",100,0,2000);
+      _h_2lSS0tau_region1_nBjets  	= bookHisto1D("2lSS0tau_region1_nBjets",4,-0.5,3.5);
+      _h_2lSS0tau_region1_bjet0pT 	= bookHisto1D("2lSS0tau_region1_bjet0Pt",50,0,500);
+      _h_2lSS0tau_region1_lep0pT  	= bookHisto1D("2lSS0tau_region1_lep0Pt",40,0,800);
+      _h_2lSS0tau_region1_lepJetMinDR 	= bookHisto1D("2lSS0tau_region1_lepJetminDR",5,0,0.5);
+      _h_2lSS0tau_region1_DR_lep01 	= bookHisto1D("2lSS0tau_region1_DR_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region1_DEta_lep01  	= bookHisto1D("2lSS0tau_region1_DEta_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region1_DPhi_lep01 	= bookHisto1D("2lSS0tau_region1_DPhi_lep01",10,0,2*M_PI);
 
       _h_2lSS0tau_region2_nJets  	= bookHisto1D("2lSS0tau_region2_nJets",10,-0.5,9.5);
-      _h_2lSS0tau_region2_HT	    	= bookHisto1D("2lSS0tau_region2_HT",200,0,1000);
-      _h_2lSS0tau_region2_nBjets  	= bookHisto1D("2lSS0tau_region2_nBjets",10,-0.5,9.5);
-      _h_2lSS0tau_region2_bjet0pT 	= bookHisto1D("2lSS0tau_region2_bjet0Pt",200,0,1000);
-      _h_2lSS0tau_region2_lep0pT  	= bookHisto1D("2lSS0tau_region2_lep0Pt",200,0,1000);
-      _h_2lSS0tau_region2_lepJetMinDR 	= bookHisto1D("2lSS0tau_region2_lepJetminDR",20,0,M_PI/2);
-      _h_2lSS0tau_region2_DR_lep01 	= bookHisto1D("2lSS0tau_region2_DR_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region2_DEta_lep01	= bookHisto1D("2lSS0tau_region2_DEta_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region2_DPhi_lep01 	= bookHisto1D("2lSS0tau_region2_DPhi_lep01",20,0,2*M_PI);
+      _h_2lSS0tau_region2_HT	    	= bookHisto1D("2lSS0tau_region2_HT",100,0,2000);
+      _h_2lSS0tau_region2_nBjets  	= bookHisto1D("2lSS0tau_region2_nBjets",4,-0.5,3.5);
+      _h_2lSS0tau_region2_bjet0pT 	= bookHisto1D("2lSS0tau_region2_bjet0Pt",50,0,500);
+      _h_2lSS0tau_region2_lep0pT  	= bookHisto1D("2lSS0tau_region2_lep0Pt",40,0,800);
+      _h_2lSS0tau_region2_lepJetMinDR 	= bookHisto1D("2lSS0tau_region2_lepJetminDR",5,0,0.5);
+      _h_2lSS0tau_region2_DR_lep01 	= bookHisto1D("2lSS0tau_region2_DR_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region2_DEta_lep01	= bookHisto1D("2lSS0tau_region2_DEta_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region2_DPhi_lep01 	= bookHisto1D("2lSS0tau_region2_DPhi_lep01",10,0,2*M_PI);
 
       _h_2lSS0tau_region3_nJets  	= bookHisto1D("2lSS0tau_region3_nJets",10,-0.5,9.5);
-      _h_2lSS0tau_region3_HT	    	= bookHisto1D("2lSS0tau_region3_HT",200,0,1000);
-      _h_2lSS0tau_region3_nBjets  	= bookHisto1D("2lSS0tau_region3_nBjets",10,-0.5,9.5);
-      _h_2lSS0tau_region3_bjet0pT 	= bookHisto1D("2lSS0tau_region3_bjet0Pt",200,0,1000);
-      _h_2lSS0tau_region3_lep0pT  	= bookHisto1D("2lSS0tau_region3_lep0Pt",200,0,1000);
-      _h_2lSS0tau_region3_lepJetMinDR 	= bookHisto1D("2lSS0tau_region3_lepJetminDR",20,0,M_PI/2);
-      _h_2lSS0tau_region3_DR_lep01 	= bookHisto1D("2lSS0tau_region3_DR_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region3_DEta_lep01	= bookHisto1D("2lSS0tau_region3_DEta_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region3_DPhi_lep01 	= bookHisto1D("2lSS0tau_region3_DPhi_lep01",20,0,2*M_PI);
+      _h_2lSS0tau_region3_HT	    	= bookHisto1D("2lSS0tau_region3_HT",100,0,2000);
+      _h_2lSS0tau_region3_nBjets  	= bookHisto1D("2lSS0tau_region3_nBjets",4,-0.5,3.5);
+      _h_2lSS0tau_region3_bjet0pT 	= bookHisto1D("2lSS0tau_region3_bjet0Pt",50,0,500);
+      _h_2lSS0tau_region3_lep0pT  	= bookHisto1D("2lSS0tau_region3_lep0Pt",40,0,800);
+      _h_2lSS0tau_region3_lepJetMinDR 	= bookHisto1D("2lSS0tau_region3_lepJetminDR",5,0,0.5);
+      _h_2lSS0tau_region3_DR_lep01 	= bookHisto1D("2lSS0tau_region3_DR_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region3_DEta_lep01	= bookHisto1D("2lSS0tau_region3_DEta_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region3_DPhi_lep01 	= bookHisto1D("2lSS0tau_region3_DPhi_lep01",10,0,2*M_PI);
 
 
       _h_2lSS0tau_region4_nJets  	= bookHisto1D("2lSS0tau_region4_nJets",10,-0.5,9.5);
-      _h_2lSS0tau_region4_HT	    	= bookHisto1D("2lSS0tau_region4_HT",200,0,1000);
-      _h_2lSS0tau_region4_nBjets  	= bookHisto1D("2lSS0tau_region4_nBjets",10,-0.5,9.5);
-      _h_2lSS0tau_region4_bjet0pT 	= bookHisto1D("2lSS0tau_region4_bjet0Pt",200,0,1000);
-      _h_2lSS0tau_region4_lep0pT  	= bookHisto1D("2lSS0tau_region4_lep0Pt",200,0,1000);
-      _h_2lSS0tau_region4_lepJetMinDR 	= bookHisto1D("2lSS0tau_region4_lepJetminDR",20,0,M_PI/2);
-      _h_2lSS0tau_region4_DR_lep01 	= bookHisto1D("2lSS0tau_region4_DR_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region4_DEta_lep01	= bookHisto1D("2lSS0tau_region4_DEta_lep01",20,0,2*M_PI);
-      _h_2lSS0tau_region4_DPhi_lep01 	= bookHisto1D("2lSS0tau_region4_DPhi_lep01",20,0,2*M_PI);
+      _h_2lSS0tau_region4_HT	    	= bookHisto1D("2lSS0tau_region4_HT",100,0,2000);
+      _h_2lSS0tau_region4_nBjets  	= bookHisto1D("2lSS0tau_region4_nBjets",4,-0.5,3.5);
+      _h_2lSS0tau_region4_bjet0pT 	= bookHisto1D("2lSS0tau_region4_bjet0Pt",50,0,500);
+      _h_2lSS0tau_region4_lep0pT  	= bookHisto1D("2lSS0tau_region4_lep0Pt",40,0,800);
+      _h_2lSS0tau_region4_lepJetMinDR 	= bookHisto1D("2lSS0tau_region4_lepJetminDR",5,0,0.5);
+      _h_2lSS0tau_region4_DR_lep01 	= bookHisto1D("2lSS0tau_region4_DR_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region4_DEta_lep01	= bookHisto1D("2lSS0tau_region4_DEta_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region4_DPhi_lep01 	= bookHisto1D("2lSS0tau_region4_DPhi_lep01",10,0,2*M_PI);
 
-      _h_2lSS1tau_region5_nJets  	= bookHisto1D("2lSS1tau_region5_nJets",10,-0.5,9.5);
-      _h_2lSS1tau_region5_HT	    	= bookHisto1D("2lSS1tau_region5_HT",200,0,1000);
-      _h_2lSS1tau_region5_nBjets  	= bookHisto1D("2lSS1tau_region5_nBjets",10,-0.5,9.5);
-      _h_2lSS1tau_region5_bjet0pT 	= bookHisto1D("2lSS1tau_region5_bjet0Pt",200,0,1000);
-      _h_2lSS1tau_region5_lep0pT  	= bookHisto1D("2lSS1tau_region5_lep0Pt",200,0,1000);
-      _h_2lSS1tau_region5_lepJetMinDR 	= bookHisto1D("2lSS1tau_region5_lepJetminDR",20,0,M_PI/2);
-      _h_2lSS1tau_region5_DR_lep01 	= bookHisto1D("2lSS1tau_region5_DR_lep01",20,0,2*M_PI);
-      _h_2lSS1tau_region5_DEta_lep01	= bookHisto1D("2lSS1tau_region5_DEta_lep01",20,0,2*M_PI);
-      _h_2lSS1tau_region5_DPhi_lep01 	= bookHisto1D("2lSS1tau_region5_DPhi_lep01",20,0,2*M_PI);
+      _h_2lSS0tau_region5_nJets  	= bookHisto1D("2lSS0tau_region5_nJets",10,-0.5,9.5);
+      _h_2lSS0tau_region5_HT	    	= bookHisto1D("2lSS0tau_region5_HT",100,0,2000);
+      _h_2lSS0tau_region5_nBjets  	= bookHisto1D("2lSS0tau_region5_nBjets",4,-0.5,3.5);
+      _h_2lSS0tau_region5_bjet0pT 	= bookHisto1D("2lSS0tau_region5_bjet0Pt",50,0,500);
+      _h_2lSS0tau_region5_lep0pT  	= bookHisto1D("2lSS0tau_region5_lep0Pt",40,0,800);
+      _h_2lSS0tau_region5_lepJetMinDR 	= bookHisto1D("2lSS0tau_region5_lepJetminDR",5,0,0.5);
+      _h_2lSS0tau_region5_DR_lep01 	= bookHisto1D("2lSS0tau_region5_DR_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region5_DEta_lep01	= bookHisto1D("2lSS0tau_region5_DEta_lep01",10,0,2*M_PI);
+      _h_2lSS0tau_region5_DPhi_lep01 	= bookHisto1D("2lSS0tau_region5_DPhi_lep01",10,0,2*M_PI);
+
+      _h_2lSS1tau_region6_nJets  	= bookHisto1D("2lSS1tau_region6_nJets",10,-0.5,9.5);
+      _h_2lSS1tau_region6_HT	    	= bookHisto1D("2lSS1tau_region6_HT",100,0,2000);
+      _h_2lSS1tau_region6_nBjets  	= bookHisto1D("2lSS1tau_region6_nBjets",4,-0.5,3.5);
+      _h_2lSS1tau_region6_bjet0pT 	= bookHisto1D("2lSS1tau_region6_bjet0Pt",50,0,500);
+      _h_2lSS1tau_region6_lep0pT  	= bookHisto1D("2lSS1tau_region6_lep0Pt",40,0,800);
+      _h_2lSS1tau_region6_lepJetMinDR 	= bookHisto1D("2lSS1tau_region6_lepJetminDR",5,0,0.5);
+      _h_2lSS1tau_region6_DR_lep01 	= bookHisto1D("2lSS1tau_region6_DR_lep01",10,0,2*M_PI);
+      _h_2lSS1tau_region6_DEta_lep01	= bookHisto1D("2lSS1tau_region6_DEta_lep01",10,0,2*M_PI);
+      _h_2lSS1tau_region6_DPhi_lep01 	= bookHisto1D("2lSS1tau_region6_DPhi_lep01",10,0,2*M_PI);
+      _h_2lSS1tau_region6_tauPt		= bookHisto1D("2lSS1tau_region6_tauPt",50,0,500);
+
+
+      _h_2lSS1tau_region7_nJets  	= bookHisto1D("2lSS1tau_region7_nJets",10,-0.5,9.5);
+      _h_2lSS1tau_region7_HT	    	= bookHisto1D("2lSS1tau_region7_HT",100,0,2000);
+      _h_2lSS1tau_region7_nBjets  	= bookHisto1D("2lSS1tau_region7_nBjets",4,-0.5,3.5);
+      _h_2lSS1tau_region7_bjet0pT 	= bookHisto1D("2lSS1tau_region7_bjet0Pt",50,0,500);
+      _h_2lSS1tau_region7_lep0pT  	= bookHisto1D("2lSS1tau_region7_lep0Pt",40,0,800);
+      _h_2lSS1tau_region7_lepJetMinDR 	= bookHisto1D("2lSS1tau_region7_lepJetminDR",5,0,0.5);
+      _h_2lSS1tau_region7_DR_lep01 	= bookHisto1D("2lSS1tau_region7_DR_lep01",10,0,2*M_PI);
+      _h_2lSS1tau_region7_DEta_lep01	= bookHisto1D("2lSS1tau_region7_DEta_lep01",10,0,2*M_PI);
+      _h_2lSS1tau_region7_DPhi_lep01 	= bookHisto1D("2lSS1tau_region7_DPhi_lep01",10,0,2*M_PI);
+      _h_2lSS1tau_region7_tauPt		= bookHisto1D("2lSS1tau_region7_tauPt",50,0,500);
+
 
 
     }
@@ -245,28 +269,24 @@ namespace Rivet {
      //two light-leptons
      if(nLep==2)
      {
-	 // 0-tau
-         if(tauVec.size()==0)
+         //same sign + lepton pT 
+         if(lepVec.at(0).charge()*lepVec.at(1).charge() >0 && lepVec.at(0).pT()/GeV >15 && lepVec.at(1).pT()/GeV > 10)
          {
-             //same sign + lepton pT 
-             if(lepVec.at(0).charge()*lepVec.at(1).charge() >0 && lepVec.at(0).pT()/GeV >25 && lepVec.at(1).pT()/GeV > 20)
+              _h_2lSS0tau_region1_nJets->fill(alljets.size(),weight);
+              _h_2lSS0tau_region1_HT->fill(ht,weight);
+              _h_2lSS0tau_region1_nBjets->fill(bjets.size(),weight);
+              _h_2lSS0tau_region1_lep0pT->fill(lepVec.at(0).pT()/GeV,weight);
+              _h_2lSS0tau_region1_lepJetMinDR->fill(min_lj_deltaR,weight);
+              _h_2lSS0tau_region1_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
+              _h_2lSS0tau_region1_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
+              _h_2lSS0tau_region1_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
+ 
+	     // 0-tau
+             if(tauVec.size()==0)
              {
 		 _h_2lSS0tau_MET->fill(event_met/GeV,weight);
                  // 'Region-1'
                  if(bjets.size()==1 && alljets.size() >= 4)
-                 {
-      		     _h_2lSS0tau_region1_nJets->fill(alljets.size(),weight);
-      		     _h_2lSS0tau_region1_HT->fill(ht,weight);
-		     _h_2lSS0tau_region1_nBjets->fill(bjets.size(),weight);
-		     _h_2lSS0tau_region1_bjet0pT->fill(bjets.at(0).pT()/GeV,weight);
-		     _h_2lSS0tau_region1_lep0pT->fill(lepVec.at(0).pT()/GeV,weight);
-		     _h_2lSS0tau_region1_lepJetMinDR->fill(min_lj_deltaR,weight);
-		     _h_2lSS0tau_region1_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
-		     _h_2lSS0tau_region1_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
-		     _h_2lSS0tau_region1_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
-                 }
-                 // 'Region-2'
-                 if(bjets.size()>=2 && alljets.size() >= 4)
                  {
       		     _h_2lSS0tau_region2_nJets->fill(alljets.size(),weight);
       		     _h_2lSS0tau_region2_HT->fill(ht,weight);
@@ -277,10 +297,9 @@ namespace Rivet {
 		     _h_2lSS0tau_region2_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
 		     _h_2lSS0tau_region2_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
 		     _h_2lSS0tau_region2_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
-
                  }
-                 // 'Region-3'
-                 if(bjets.size()==1 && alljets.size() >= 3)
+                 // 'Region-2'
+                 if(bjets.size()>=2 && alljets.size() >= 4)
                  {
       		     _h_2lSS0tau_region3_nJets->fill(alljets.size(),weight);
       		     _h_2lSS0tau_region3_HT->fill(ht,weight);
@@ -293,8 +312,8 @@ namespace Rivet {
 		     _h_2lSS0tau_region3_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
 
                  }
-                 // 'Region-4'
-                 if(bjets.size()>=2 && alljets.size() >= 3)
+                 // 'Region-3'
+                 if(bjets.size()==1 && alljets.size() >= 3)
                  {
       		     _h_2lSS0tau_region4_nJets->fill(alljets.size(),weight);
       		     _h_2lSS0tau_region4_HT->fill(ht,weight);
@@ -305,31 +324,54 @@ namespace Rivet {
 		     _h_2lSS0tau_region4_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
 		     _h_2lSS0tau_region4_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
 		     _h_2lSS0tau_region4_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
+
+                 }
+                 // 'Region-4'
+                 if(bjets.size()>=2 && alljets.size() >= 3)
+                 {
+      		     _h_2lSS0tau_region5_nJets->fill(alljets.size(),weight);
+      		     _h_2lSS0tau_region5_HT->fill(ht,weight);
+		     _h_2lSS0tau_region5_nBjets->fill(bjets.size(),weight);
+		     _h_2lSS0tau_region5_bjet0pT->fill(bjets.at(0).pT()/GeV,weight);
+		     _h_2lSS0tau_region5_lep0pT->fill(lepVec.at(0).pT()/GeV,weight);
+		     _h_2lSS0tau_region5_lepJetMinDR->fill(min_lj_deltaR,weight);
+		     _h_2lSS0tau_region5_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
+		     _h_2lSS0tau_region5_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
+		     _h_2lSS0tau_region5_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
                  }
              }
-         }
-	 // 1-tau
-         else if (tauVec.size()==1)
-         {
-            if(lepVec.at(0).charge()*lepVec.at(1).charge() >0 && lepVec.at(0).pT()/GeV >25 && lepVec.at(1).pT()/GeV > 20)
-            {
-	       _h_2lSS1tau_MET->fill(event_met/GeV,weight);
-	       // 'Region-5'
-               if(bjets.size() >= 1 && alljets.size() >= 3)
-               {
-	           _h_2lSS1tau_region5_nJets->fill(alljets.size(),weight);
-      		   _h_2lSS1tau_region5_HT->fill(ht,weight);
-		   _h_2lSS1tau_region5_nBjets->fill(bjets.size(),weight);
-		   _h_2lSS1tau_region5_bjet0pT->fill(bjets.at(0).pT()/GeV,weight);
-		   _h_2lSS1tau_region5_lep0pT->fill(lepVec.at(0).pT()/GeV,weight);
-		   _h_2lSS1tau_region5_lepJetMinDR->fill(min_lj_deltaR,weight);
-		   _h_2lSS1tau_region5_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
-		   _h_2lSS1tau_region5_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
-		   _h_2lSS1tau_region5_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
-	       }
-            }
-         }
-     }
+	     // 1-tau
+             else if (tauVec.size()>=1)
+             {
+	         _h_2lSS1tau_MET->fill(event_met/GeV,weight);
+		 // 'Region-6'
+		 _h_2lSS1tau_region6_nJets->fill(alljets.size(),weight);
+      	         _h_2lSS1tau_region6_HT->fill(ht,weight);
+	         _h_2lSS1tau_region6_nBjets->fill(bjets.size(),weight);
+	         _h_2lSS1tau_region6_lep0pT->fill(lepVec.at(0).pT()/GeV,weight);
+	         _h_2lSS1tau_region6_lepJetMinDR->fill(min_lj_deltaR,weight);
+	         _h_2lSS1tau_region6_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
+	         _h_2lSS1tau_region6_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
+	         _h_2lSS1tau_region6_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
+		 _h_2lSS1tau_region6_tauPt->fill(tauVec.at(0).pT()/GeV,weight);
+
+	         // 'Region-7'
+                 if(bjets.size() >= 1 && alljets.size() >= 3)
+                 {
+	             _h_2lSS1tau_region7_nJets->fill(alljets.size(),weight);
+      	             _h_2lSS1tau_region7_HT->fill(ht,weight);
+	             _h_2lSS1tau_region7_nBjets->fill(bjets.size(),weight);
+	             _h_2lSS1tau_region7_bjet0pT->fill(bjets.at(0).pT()/GeV,weight);
+	             _h_2lSS1tau_region7_lep0pT->fill(lepVec.at(0).pT()/GeV,weight);
+	             _h_2lSS1tau_region7_lepJetMinDR->fill(min_lj_deltaR,weight);
+	             _h_2lSS1tau_region7_DR_lep01->fill(fabs(deltaR(lepVec.at(0),lepVec.at(1))),weight);
+	             _h_2lSS1tau_region7_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
+	             _h_2lSS1tau_region7_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
+		     _h_2lSS1tau_region7_tauPt->fill(tauVec.at(0).pT()/GeV,weight);
+	          }
+              }
+          }
+      }
   }
 
 
@@ -356,7 +398,11 @@ namespace Rivet {
     Histo1DPtr  _h_2lSS0tau_region2_nJets,_h_2lSS0tau_region2_HT,_h_2lSS0tau_region2_nBjets,_h_2lSS0tau_region2_bjet0pT,_h_2lSS0tau_region2_lep0pT,_h_2lSS0tau_region2_lepJetMinDR,_h_2lSS0tau_region2_DR_lep01,_h_2lSS0tau_region2_DEta_lep01,_h_2lSS0tau_region2_DPhi_lep01;
     Histo1DPtr  _h_2lSS0tau_region3_nJets,_h_2lSS0tau_region3_HT,_h_2lSS0tau_region3_nBjets,_h_2lSS0tau_region3_bjet0pT,_h_2lSS0tau_region3_lep0pT,_h_2lSS0tau_region3_lepJetMinDR,_h_2lSS0tau_region3_DR_lep01,_h_2lSS0tau_region3_DEta_lep01,_h_2lSS0tau_region3_DPhi_lep01;
     Histo1DPtr  _h_2lSS0tau_region4_nJets,_h_2lSS0tau_region4_HT,_h_2lSS0tau_region4_nBjets,_h_2lSS0tau_region4_bjet0pT,_h_2lSS0tau_region4_lep0pT,_h_2lSS0tau_region4_lepJetMinDR,_h_2lSS0tau_region4_DR_lep01,_h_2lSS0tau_region4_DEta_lep01,_h_2lSS0tau_region4_DPhi_lep01;
-    Histo1DPtr  _h_2lSS1tau_region5_nJets,_h_2lSS1tau_region5_HT,_h_2lSS1tau_region5_nBjets,_h_2lSS1tau_region5_bjet0pT,_h_2lSS1tau_region5_lep0pT,_h_2lSS1tau_region5_lepJetMinDR,_h_2lSS1tau_region5_DR_lep01,_h_2lSS1tau_region5_DEta_lep01,_h_2lSS1tau_region5_DPhi_lep01;
+    Histo1DPtr  _h_2lSS0tau_region5_nJets,_h_2lSS0tau_region5_HT,_h_2lSS0tau_region5_nBjets,_h_2lSS0tau_region5_bjet0pT,_h_2lSS0tau_region5_lep0pT,_h_2lSS0tau_region5_lepJetMinDR,_h_2lSS0tau_region5_DR_lep01,_h_2lSS0tau_region5_DEta_lep01,_h_2lSS0tau_region5_DPhi_lep01;
+    Histo1DPtr  _h_2lSS1tau_region6_nJets,_h_2lSS1tau_region6_HT,_h_2lSS1tau_region6_nBjets,_h_2lSS1tau_region6_bjet0pT,_h_2lSS1tau_region6_lep0pT,_h_2lSS1tau_region6_lepJetMinDR,_h_2lSS1tau_region6_DR_lep01,_h_2lSS1tau_region6_DEta_lep01,_h_2lSS1tau_region6_DPhi_lep01,_h_2lSS1tau_region6_tauPt;
+    Histo1DPtr  _h_2lSS1tau_region7_nJets,_h_2lSS1tau_region7_HT,_h_2lSS1tau_region7_nBjets,_h_2lSS1tau_region7_bjet0pT,_h_2lSS1tau_region7_lep0pT,_h_2lSS1tau_region7_lepJetMinDR,_h_2lSS1tau_region7_DR_lep01,_h_2lSS1tau_region7_DEta_lep01,_h_2lSS1tau_region7_DPhi_lep01,_h_2lSS1tau_region7_tauPt;
+
+
 
     //@}
 

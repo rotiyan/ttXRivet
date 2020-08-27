@@ -63,22 +63,22 @@ namespace Rivet
                 _h_event_nMu    = bookHisto1D("event_nMu",20,-0.5,19.5);
 
                 _h_diEl_mass    = bookHisto1D("diEl_mass",240,0,120);
-                _h_diEl_pt      = bookHisto1D("diEl_pt",200,10,210);
+                _h_diEl_pt      = bookHisto1D("diEl_pt",500,10,6000);
                 _h_diEl_eta     = bookHisto1D("diEl_eta",100,-4,4);
                 _h_diEl_phi     = bookHisto1D("diEl_phi",100,0,6);
 
                 _h_diMu_mass    = bookHisto1D("diMu_mass",240,0,120);
-                _h_diMu_pt      = bookHisto1D("diMu_pt",200,10,210);
+                _h_diMu_pt      = bookHisto1D("diMu_pt",500,10,6000);
                 _h_diMu_eta     = bookHisto1D("diMu_eta",100,-4,4);
                 _h_diMu_phi     = bookHisto1D("diMu_phi",100,0,6);
 
                 _h_WLep_mass    = bookHisto1D("WLep_mass",240,0,120);
-                _h_WLep_pt      = bookHisto1D("WLep_pt",200,10,210);
+                _h_WLep_pt      = bookHisto1D("WLep_pt",500,10,6000);
                 _h_WLep_eta     = bookHisto1D("WLep_eta",100,-4,4);
                 _h_WLep_phi     = bookHisto1D("Wlept_phi",100,0,6);
 
                 _h_WHad_mass    = bookHisto1D("WHad_mass",240,0,120);
-                _h_WHad_pt      = bookHisto1D("WHad_pt",200,10,210);
+                _h_WHad_pt      = bookHisto1D("WHad_pt",500,10,6000);
                 _h_WHad_eta     = bookHisto1D("WHad_eta",100,-4,4);
                 _h_WHad_phi     = bookHisto1D("WHad_phi",100,0,6);
 
@@ -242,7 +242,7 @@ namespace Rivet
                 {
                     if(1<vec.mass()/GeV && 120>vec.mass()/GeV)
                     {
-                        MSG_INFO("diEl Mass diff:"<< fabs(vec.mass()-targetMass));
+                        MSG_DEBUG("diEl Mass diff:"<< fabs(vec.mass()-targetMass));
                         if(fabs(vec.mass()-targetMass) < zeeCand.mass()-targetMass)
                         {
                             const FourMomentum myVec = vec;
@@ -283,7 +283,7 @@ namespace Rivet
                 if(!(diElEvent||diMuEvent))
                 {
                     vetoEvent;
-                    MSG_INFO("Failed diLepton inv Mass cut");
+                    MSG_DEBUG("Failed diLepton inv Mass cut");
                 }
 
                 //Find Leptonic W's 
@@ -305,7 +305,7 @@ namespace Rivet
                         if(fabs(WCand.mass()-80.4*GeV) < Wmu.mass()-80.04*GeV) Wmu = WCand;
                     }
                 }
-                MSG_INFO("Wel mass:"<<Wel.mass()/GeV);
+                MSG_DEBUG("Wel mass:"<<Wel.mass()/GeV);
 
                 _h_WLep_mass->fill(Wel.mass()/GeV,weight);
                 _h_WLep_mass->fill(Wmu.mass()/GeV,weight);
@@ -334,7 +334,7 @@ namespace Rivet
                     }
                     if(!isolated)
                     {
-                        MSG_INFO("Jet failed lepton isolation cut");
+                        MSG_DEBUG("Jet failed lepton isolation cut");
                         break;
                     }
                     foreach( const Particle & b, bhadrons)
@@ -349,17 +349,17 @@ namespace Rivet
                         }
                     }
                 }
-                MSG_INFO("Number of b-jets = "<<bjets.size());
-                MSG_INFO("Number of l-jets = "<< ljets.size());
+                MSG_DEBUG("Number of b-jets = "<<bjets.size());
+                MSG_DEBUG("Number of l-jets = "<< ljets.size());
                 if(bjets.size() < 2)
                 {
-                    MSG_INFO("#bjets < 2");
+                    MSG_DEBUG("#bjets < 2");
                     vetoEvent;
 
                 }
                 if(ljets.size()<2)
                 {
-                    MSG_INFO("l-jets<2");
+                    MSG_DEBUG("l-jets<2");
                     vetoEvent;
                 }
 
@@ -397,7 +397,7 @@ namespace Rivet
 
                 _h_top_mass->fill(t1.mass()/GeV,weight);
                 _h_top_mass->fill(t2.mass()/GeV,weight);
-                MSG_INFO("What is picobarn"<<picobarn);
+                MSG_DEBUG("What is picobarn"<<picobarn);
 
             }
 

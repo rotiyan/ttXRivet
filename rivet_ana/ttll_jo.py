@@ -19,9 +19,13 @@ else:
 #print sys.argv[1]
 #svcMgr.EventSelector.InputCollections= sys.argv[1]
 
-
+from AthenaCommon.AppMgr import ServiceMgr as svcMgr
 from AthenaCommon.AlgSequence import AlgSequence
 job = AlgSequence()
+
+from GaudiSvc.GaudiSvcConf import THistSvc
+ServiceMgr += THistSvc()
+ServiceMgr.THistSvc.Output = ["Rivet DATAFILE='Rivet.root' OPT='RECREATE'"]
 
 from Rivet_i.Rivet_iConf import Rivet_i
 

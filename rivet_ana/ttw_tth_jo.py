@@ -14,7 +14,6 @@ if os.path.exists("input.txt"):
 
 else:
     svcMgr.EventSelector.InputCollections=['EVNT.12071733._000299.pool.root.1']
-
 #svcMgr.EventSelector.InputCollections= glob("/afs/cern.ch/user/n/narayan/work/mcProd/sherpa/pmg-rivet/rivet_plugins/user.narayan.ttZ_Sherpa225_NLO_180627_EXT1/*")
 
 #print sys.argv[1]
@@ -27,7 +26,6 @@ job = AlgSequence()
 from GaudiSvc.GaudiSvcConf import THistSvc
 ServiceMgr += THistSvc()
 ServiceMgr.THistSvc.Output = ["Rivet DATAFILE='Rivet.root' OPT='RECREATE'"]
-
 
 from Rivet_i.Rivet_iConf import Rivet_i
 
