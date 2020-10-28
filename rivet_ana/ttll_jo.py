@@ -23,9 +23,9 @@ from AthenaCommon.AppMgr import ServiceMgr as svcMgr
 from AthenaCommon.AlgSequence import AlgSequence
 job = AlgSequence()
 
-from GaudiSvc.GaudiSvcConf import THistSvc
-ServiceMgr += THistSvc()
-ServiceMgr.THistSvc.Output = ["Rivet DATAFILE='Rivet.root' OPT='RECREATE'"]
+#from GaudiSvc.GaudiSvcConf import THistSvc
+#ServiceMgr += THistSvc()
+#ServiceMgr.THistSvc.Output = ["Rivet DATAFILE='Rivet.root' OPT='RECREATE'"]
 
 from Rivet_i.Rivet_iConf import Rivet_i
 
@@ -34,8 +34,11 @@ rivet = Rivet_i()
 rivet.AnalysisPath = os.environ['PWD']
 
 rivet.Analyses +=["TTZ_analysis"]
+#rivet.Analyses +=["MC_TTBAR"]
+#rivet.Analyses +=["EXAMPLE_SMEAR"]
 rivet.RunName = ""
-rivet.HistoFile = "ttll_study"
+rivet.HistoFile = "ttll_study.yoda"
 rivet.CrossSection = xs # xs to be read from athena or pathena commandline
+#rivet.SkipWeights=True
 print "CrossSection",xs
 job += rivet

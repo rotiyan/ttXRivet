@@ -270,6 +270,7 @@ namespace Rivet {
      if(nLep==2)
      {
          //same sign + lepton pT 
+         // Region-1
          if(lepVec.at(0).charge()*lepVec.at(1).charge() >0 && lepVec.at(0).pT()/GeV >15 && lepVec.at(1).pT()/GeV > 10)
          {
               _h_2lSS0tau_region1_nJets->fill(alljets.size(),weight);
@@ -285,7 +286,7 @@ namespace Rivet {
              if(tauVec.size()==0)
              {
 		 _h_2lSS0tau_MET->fill(event_met/GeV,weight);
-                 // 'Region-1'
+                 // 'Region-2'
                  if(bjets.size()==1 && alljets.size() >= 4)
                  {
       		     _h_2lSS0tau_region2_nJets->fill(alljets.size(),weight);
@@ -298,7 +299,7 @@ namespace Rivet {
 		     _h_2lSS0tau_region2_DEta_lep01->fill(fabs(deltaEta(lepVec.at(0),lepVec.at(1))),weight);
 		     _h_2lSS0tau_region2_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
                  }
-                 // 'Region-2'
+                 // 'Region-3'
                  if(bjets.size()>=2 && alljets.size() >= 4)
                  {
       		     _h_2lSS0tau_region3_nJets->fill(alljets.size(),weight);
@@ -312,7 +313,7 @@ namespace Rivet {
 		     _h_2lSS0tau_region3_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
 
                  }
-                 // 'Region-3'
+                 // 'Region-4'
                  if(bjets.size()==1 && alljets.size() >= 3)
                  {
       		     _h_2lSS0tau_region4_nJets->fill(alljets.size(),weight);
@@ -326,7 +327,7 @@ namespace Rivet {
 		     _h_2lSS0tau_region4_DPhi_lep01->fill(fabs(deltaPhi(lepVec.at(0),lepVec.at(1))),weight);
 
                  }
-                 // 'Region-4'
+                 // 'Region-5'
                  if(bjets.size()>=2 && alljets.size() >= 3)
                  {
       		     _h_2lSS0tau_region5_nJets->fill(alljets.size(),weight);

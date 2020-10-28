@@ -17,6 +17,7 @@ timeStamp=`date +%H%M%S_%m%Y`
 #
 #prun --exec "grid_run.sh " --writeInputToTxt %IN:input.txt --nFilesPerJob=10 --inDS=mc15_13TeV.413008.Sherpa_221_NN30NNLO_ttW_multilegNLO.evgen.EVNT.e7286 --extFile=RivetAnalysis.so --outputs ttw_analysis.yoda --outDS=user.narayan.${timeStamp}.413008.Sherpa_221_NN30NNLO_ttW_multilegNLO.evgen.EVNT.e7286 
 
-prun --exec "grid_run.sh " --writeInputToTxt %IN:input.txt --nFilesPerJob=100 --inDS=mc16_13TeV.700000.Sh_228_ttW.merge.EVNT.e7793_e7400 --extFile=Rivet_ttW_ttH_analysis.so --outputs Rivet.root --outDS=user.narayan.${timeStamp}.700000.Sherpa_228_ttWEWK_20200821
+#prun --exec "grid_run.sh " --writeInputToTxt %IN:input.txt --nFilesPerJob=100 --inDS=mc16_13TeV.700000.Sh_228_ttW.merge.EVNT.e7793_e7400 --extFile=Rivet_ttW_ttH_analysis.so --outputs Rivet.root --outDS=user.narayan.${timeStamp}.700000.Sherpa_228_ttWEWK_20200821
 
-#prun --exec "grid_run.sh " --writeInputToTxt %IN:input.txt --nFilesPerJob=100 --inDS=mc16_13TeV.413023.Sherpa_221_ttll_multileg_NLO.merge.EVNT.e7504_e5984 --extFile=RivetTTZ_analysis.so --outputs Rivet.root --outDS=user.narayan.${timeStamp}.413023.Sherpa_221_ttll_20200821/
+prun --exec "grid_run.sh " --writeInputToTxt %IN:input.txt --nFilesPerJob=100 --inDS=mc16_13TeV.413023.Sherpa_221_ttll_multileg_NLO.merge.EVNT.e7504_e5984 --extFile=RivetTTZ_analysis.so --outputs Rivet.root --outDS=user.narayan.${timeStamp}.413023.Sherpa_221_ttll_20200902/
+prun --exec "grid_run.sh " --writeInputToTxt %IN:input.txt --nFilesPerJob=100 --inDS=user.narayan:user.narayan.Sh2210_ttll_multNLO_v4_EXT0 --extFile=RivetTTZ_analysis.so --outputs Rivet.root --outDS=user.narayan.${timeStamp}.Sherpa_221i0_ttll_20200902/
