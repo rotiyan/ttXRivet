@@ -14,8 +14,8 @@ Navigate to the folder ``pmg-rivet`` and setup a latest MCProd cache
 
 
 ```
-asetup 21.6.3,AthGeneration,here
-source ${LCG_RELEASE_BASE}/LCG_88/MCGenerators/rivet/${RIVETVER}/${LCG_PLATFORM}/rivetenv.sh
+asetup 21.6.33,AthGeneration,here
+source setupRivet.sh
 ```
 #  Building the rivet-plugins
 
@@ -23,7 +23,7 @@ The plugins are located in the rivet_plugins folder. ``cd rivet_plugins``
 
 To build the plugin do the following 
 ```
-rivet-buildplugin RivetTTZ_analysis.so TTZ_analysis.cc
+rivet-build Rivet_ttW_ttH_analysis.so ../rivet_plugins/ttw_ttH-ml.cc
 ```
 
 
@@ -32,10 +32,10 @@ Copy the plugin to the ``rivet-ana`` folder. The plugin can be run standalone or
 
 The following procedure explains how to do a standalone analysis. 
 
-Modify the ``ttll_jo.py`` script accordingly  and can be ran locally by running athena 
+Modify the ``ttw_tth_jo.py`` script accordingly  and can be ran locally by running athena 
 
 ```
-athena -c 'xs=1' ttll_jo.py
+athena -c 'xs=1' ttw_tth_jo.py 
 ```
 Here ``xs`` is the cross section of the sample under consideration (Used in the plugin internally for normalization)
 
@@ -44,5 +44,5 @@ Here ``xs`` is the cross section of the sample under consideration (Used in the 
 If you want to run the jobs on grid (most likely the case), you may use pathena to do so.
 
 ```
-pathena -c 'xs=0.00227596' --noBuild --extFile=RivetTTZ_analysis.so --extOutFile ttz_analysis.yoda --inDS=<inputds> --outDS=<output_ds>  ttll_jo.py
+pathena -c 'xs=0.00227596' --noBuild --extFile=Rivet_ttW_ttH_analysis.so --extOutFile ttw_ttH.yoda --inDS=<inputds> --outDS=<output_ds>  ttll_jo.py
 ```
