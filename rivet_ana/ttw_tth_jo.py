@@ -13,7 +13,7 @@ if os.path.exists("input.txt"):
         svcMgr.EventSelector.InputCollections = [x.strip("\n") for x in f.read().split(",")]
 
 else:
-    svcMgr.EventSelector.InputCollections=['EVNT.12071733._000299.pool.root.1']
+    svcMgr.EventSelector.InputCollections=['/scratch/users/rnarayan/mcProd/ttV/ttW_2210/inclusive/nominal/530/EVNT_530.pool.root']
 #svcMgr.EventSelector.InputCollections= glob("/afs/cern.ch/user/n/narayan/work/mcProd/sherpa/pmg-rivet/rivet_plugins/user.narayan.ttZ_Sherpa225_NLO_180627_EXT1/*")
 
 #print sys.argv[1]
